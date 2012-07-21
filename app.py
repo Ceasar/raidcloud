@@ -5,14 +5,13 @@ from flask import Flask, request, session, g, redirect, url_for, \
              render_template, flash
 from auth import authenticate
 # TODO: Make models file
-from models import User
-
 
 app = Flask(__name__)
 db = SQLAlchemy(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://raid:cloud@localhost/raidcloud'
 
+from models import User
 
 @app.before_request
 def before_request():
