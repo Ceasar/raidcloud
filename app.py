@@ -3,13 +3,30 @@ import os
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask import Flask, request, session, g, redirect, url_for, \
              render_template, flash
+from flask.ext.oauth import OAuth
+
 from auth import authenticate
 # TODO: Make models file
 
 app = Flask(__name__)
 app.config.from_object(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://raid:cloud@localhost/raidcloud'
+app.config['GOOGLE_OAUTH_CONSUMER_SECRET'] = 'ei7THdOn1OyYCgYL_51ntTqK'
+app.config['GOOGLE_OUATH_CONSUMER_KEY'] = 'AIzaSyAwJ0XdL2X6jU9S-2vOzfXsE3yfnx6361Q'
 db = SQLAlchemy(app)
+
+oauth = OAuth()
+google = oauth.remote_app('google',
+    base_url='https://www.google.com/accounts/',
+    request_token_url='https://www.google.com/accounts/OAuthGetRequestToken',
+    access_token_url='https://www.google.com/accounts/OAuthGetAccessToken',
+    authorize_url='https://www.google.com/accounts/OAuthAuthorizeToken',
+    consumer_key=app.config['GOOGLE_OAUTH_CONSUMER_KEY'],
+    consumer_secret=app.config['GOOGLE_OAUTH_CONSUMER_SECRET'],
+    request_token_params={
+        'scope': 'https://www.googleapis.com/auth/drive.file'
+    },
+)
 
 
 def get_user_id(username):
