@@ -1,8 +1,8 @@
-define(function (require, exports) {
+define(function (require, exports, module) {
   'use strict';
 
-  var $           = require('lib/jquery')
-    , _           = require('lib/underscore.min');
+  var $           = require('jquery')
+    , _           = require('underscore');
 
   var utils = {
 
@@ -13,6 +13,6 @@ define(function (require, exports) {
 
   };
 
-  exports = utils;
+  module.exports = utils;
 
 });

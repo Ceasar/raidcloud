@@ -21,6 +21,7 @@ def get_user_id(username):
 # Models
 ###
 
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True, nullable=False)
 
@@ -48,6 +49,7 @@ class Chunk(db.Model):
 ###
 # Routes
 ###
+
 
 @app.before_request
 def before_request():

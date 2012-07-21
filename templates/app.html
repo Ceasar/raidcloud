@@ -5,17 +5,17 @@
     <meta charset="utf-8" />
     <!--[if lt IE 9]><script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
     <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible" />
-    <link href="assets/favicon.png" rel="shortcut icon" />
+    <link href="static/images/favicon.png" rel="shortcut icon" />
 
-    <link href="stylesheets/app.css" rel="stylesheet" />
-    <script data-main="scripts/app" src="scripts/require-jquery.js"></script>
+    <link href="static/stylesheets/app.css" rel="stylesheet" />
+    <script data-main="static/scripts/app" src="static/scripts/require-jquery.js"></script>
   </head>
   <body>
     <div class="container" id="main">
-
+      <h1>Main</h1>
     </div>
   </body>
 
-  {% include 'static/templates/_main.html' %}
+{% include '_main.html' %}
 
 </html>

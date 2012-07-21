@@ -1,31 +1,25 @@
 /* Javascript entry point for our app */
-define(function (require) {
+define(function (require, exports, module) {
   'use strict';
 
-  var $           = require('lib/jquery')
-    , _           = require('lib/underscore.min')
-    , Backbone    = require('lib/backbone.min')
+  var $           = require('jquery')
+    , _           = require('underscore')
+    , Backbone    = require('backbone')
     , utils       = require('utils');
 
   require('lib/bootstrap-modal');
 
-  console.log('init');
-
   var AppModel = Backbone.Model.extend({
+
+    initialize: function () {
+      console.log('init model');
+    }
 
   });
 
   var AppView = Backbone.View.extend({
 
-    events: {
-
-    }
-
-  , template: utils.template('tmpl-main')
-
-  , initialize: function () {
-
-    }
+    template: utils.template('tmpl-main')
 
   , render: function () {
       this.$el.html(this.template(this.model.toJSON()));
@@ -33,11 +27,10 @@ define(function (require) {
 
   });
 
-
   var Router = Backbone.Router.extend({
 
     routes: {
-      '/app': 'app'
+      '': 'app'
     }
 
   , app: function () {
@@ -47,6 +40,7 @@ define(function (require) {
           , el: $('#main')
           });
 
+      console.log('app route');
       appView.render();
     }
 
