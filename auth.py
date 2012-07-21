@@ -1,15 +1,13 @@
 from flask import session
 from werkzeug import check_password_hash, generate_password_hash
 
-from models import User
-
 
 def user_get(username):
     """Get a user by username."""
     user = User.query.filter_by(username=username).first()
-    if user
+    if user:
         return user
-    else
+    else:
         raise ValueError('Invalid username')
 
 
