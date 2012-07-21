@@ -38,10 +38,7 @@ def run_migrations_offline():
     script output.
     
     """
-    try:
-        url = os.environ['DATABASE_URL']
-    except KeyError:
-        url = config.get_main_option("sqlalchemy.url")
+    url = config.get_main_option("sqlalchemy.url")
     context.configure(url=url)
 
     with context.begin_transaction():
