@@ -11,7 +11,8 @@ db = SQLAlchemy(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://raid:cloud@localhost/raidcloud'
 
-from models import User
+# from models import User
+
 
 @app.before_request
 def before_request():
