@@ -1,6 +1,10 @@
 import os
 
-from flask import Flask
+from flask import Flask, request, session, g, redirect, url_for, \
+             render_template, flash
+from auth import authenticate
+
+
 app = Flask(__name__)
 
 
@@ -9,8 +13,32 @@ def index():
     return 'Hello World!'
 
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        try:
+            authenticate(request.form['username'], request.form['password'])
+        except ValueError as e:
+            return render_template('login.html', error=str(e))
+        else:
+            flash('You were logged in')
+            return redirect(url_for('index'))
+    else:
+        if g.user:
+            return redirect(url_for('index'))
+        else:
+            return render_template('login.html')
+
+
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    flash('You were logged out')
+    return redirect(url_for('index'))
+
+
 @app.route('/users')
-def show_user(id):
+def show_users(id):
     return {}
 
 
