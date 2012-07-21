@@ -28,3 +28,10 @@ pip-log.txt
 
 #Virtualenv
 venv
+
+#c binaries
+*.o
+lxsplit
+mkuoff_t
+*~
+.DS_Store
