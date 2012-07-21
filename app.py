@@ -3,13 +3,20 @@ import os
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask import Flask, request, session, g, redirect, url_for, \
              render_template, flash
+
 from auth import authenticate
 # TODO: Make models file
 
 app = Flask(__name__)
+app.config.from_object(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://raid:cloud@localhost/raidcloud'
 db = SQLAlchemy(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://raid:cloud@localhost/raidcloud'
+
+def get_user_id(username):
+    """Convenience method to look up the id for a username."""
+    user = User.query.filter_by(username=username).first()
+    return user.user_id if user else None
 
 ###
 # Models
@@ -54,6 +61,28 @@ def before_request():
 def index():
     return render_template('app.html')
     # return 'Hello World!'
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    """Register a user."""
+    if g.user:
+        return redirect(url_for('index'))
+    error = None
+    if request.method == 'POST':
+        if not request.form['username']:
+            error = 'You have to enter a username'
+        elif not request.form['password']:
+            error = 'You have to enter a password'
+        elif request.form['password'] != request.form['password2']:
+            error = 'The two passwords do not match'
+        elif get_user_id(request.form['username']) is not None:
+            error = 'The username is already taken'
+        else:
+            user_create(request.form['username'], request.form['password'])
+            authenticate(request.form['username'], request.form['password'])
+            return redirect(url_for('settings'))
+    return render_template('register.html', error=error)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -102,5 +131,6 @@ def show_file(id):
 
 if __name__ == '__main__':
     # Bind to PORT if defined, otherwise default to 5000.
+    db.create_all()
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
