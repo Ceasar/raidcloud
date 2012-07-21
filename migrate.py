@@ -8,7 +8,7 @@ try:
     for line in fileinput.input('alembic.ini', inplace=1):
         sys.stdout.write(line.replace('postgresql://raid:cloud@localhost/raidcloud', url))
 
-    os.system('alembic upgrade head')
-
 except KeyError:
     pass
+
+os.system('alembic upgrade head')

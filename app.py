@@ -67,6 +67,7 @@ class File(db.Model):
 class Chunk(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     file_id = db.Column(db.Integer, db.ForeignKey('file.id'), nullable=False)
+    parity = db.Column(db.Boolean, nullable=False, default=False)
 
 ###
 # Routes
