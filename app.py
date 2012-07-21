@@ -3,9 +3,18 @@ import os
 from flask import Flask, request, session, g, redirect, url_for, \
              render_template, flash
 from auth import authenticate
+# TODO: Make models file
+from models import User
 
 
 app = Flask(__name__)
+
+
+@app.before_request
+def before_request():
+    g.user = None
+    if 'user_id' in session:
+        g.user = User.query.filter_by(user_id=session['user_id']).first()
 
 
 @app.route('/')
