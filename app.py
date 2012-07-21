@@ -19,7 +19,8 @@ def before_request():
 
 @app.route('/')
 def index():
-    return 'Hello World!'
+    return render_template('app.html')
+    # return 'Hello World!'
 
 
 @app.route('/login', methods=['GET', 'POST'])
