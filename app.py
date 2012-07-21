@@ -1,7 +1,12 @@
 import os
 
-from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
+from flask import Flask, request, session, g, redirect, url_for, \
+             render_template, flash
+from auth import authenticate
+# TODO: Make models file
+from models import User
+
 
 app = Flask(__name__)
 db = SQLAlchemy(app)
@@ -9,13 +14,45 @@ db = SQLAlchemy(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://raid:cloud@localhost/raidcloud'
 
 
+@app.before_request
+def before_request():
+    g.user = None
+    if 'user_id' in session:
+        g.user = User.query.filter_by(user_id=session['user_id']).first()
+
+
 @app.route('/')
 def index():
-    return 'Hello World!'
+    return render_template('app.html')
+    # return 'Hello World!'
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        try:
+            authenticate(request.form['username'], request.form['password'])
+        except ValueError as e:
+            return render_template('login.html', error=str(e))
+        else:
+            flash('You were logged in')
+            return redirect(url_for('index'))
+    else:
+        if g.user:
+            return redirect(url_for('index'))
+        else:
+            return render_template('login.html')
+
+
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    flash('You were logged out')
+    return redirect(url_for('index'))
 
 
 @app.route('/users')
-def show_user(id):
+def show_users(id):
     return {}
 
 
