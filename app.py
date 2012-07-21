@@ -10,9 +10,14 @@ from auth import authenticate
 
 app = Flask(__name__)
 app.config.from_object(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://raid:cloud@localhost/raidcloud'
+
+try:
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+except KeyError:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://raid:cloud@localhost/raidcloud'
+
 app.config['GOOGLE_OAUTH_CONSUMER_SECRET'] = 'ei7THdOn1OyYCgYL_51ntTqK'
-app.config['GOOGLE_OUATH_CONSUMER_KEY'] = 'AIzaSyAwJ0XdL2X6jU9S-2vOzfXsE3yfnx6361Q'
+app.config['GOOGLE_OAUTH_CONSUMER_KEY'] = 'AIzaSyAwJ0XdL2X6jU9S-2vOzfXsE3yfnx6361Q'
 db = SQLAlchemy(app)
 
 oauth = OAuth()
