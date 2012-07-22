@@ -95,8 +95,9 @@ h1#center-title {
   #delete-all {
     display: none;
     float: left;
-    width: 100%;
     padding: 10px;
+    position: absolute;
+    width: 824px;
     border-bottom: solid 1px #BBB;
     @include gradient-vertical(#EEE, #DDD);
     a {
@@ -181,6 +182,7 @@ h1#center-title {
 
 .file-list {
   padding: 10px;
+  padding-top: 50px;
   float: left;
   width: 100%;
   height: 100%;

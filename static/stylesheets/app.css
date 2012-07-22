@@ -3959,8 +3959,9 @@ h1#center-title {
   #finder-main #delete-all {
     display: none;
     float: left;
-    width: 100%;
     padding: 10px;
+    position: absolute;
+    width: 824px;
     border-bottom: solid 1px #BBB;
     background-color: #e7e7e7;
     background-image: -moz-linear-gradient(top, #eeeeee, #dddddd);
@@ -4061,6 +4062,7 @@ h1#center-title {
 
 .file-list {
   padding: 10px;
+  padding-top: 50px;
   float: left;
   width: 100%;
   height: 100%; }

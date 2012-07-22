@@ -16,7 +16,7 @@ define(function (require, exports) {
   , url: function () {
       var url = '/users/' + this.get('ownerId') + '/files';
 
-      if (!this.isNew()) url += '/' + this.get('id');
+      if (!this.isNew()) url += '/' + this.id;
 
       return url;
     }
