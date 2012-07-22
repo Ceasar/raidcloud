@@ -26,6 +26,8 @@ define(function (require, exports) {
               ownerId: that.options.ownerId
             }));
 
+        console.log(fileModel.toJSON());
+        console.log(fileModel.url());
         fileModel.save();
         that.add(fileModel);
       });
