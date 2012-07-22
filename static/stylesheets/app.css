@@ -4063,6 +4063,14 @@ h1#center-title {
   width: 100%;
   height: 100%; }
 
+#progress {
+  display: none;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  border-radius: 0; }
+  #progress .bar {
+    width: 0%; }
+
 .file {
   display: block;
   float: left;
@@ -4107,3 +4115,32 @@ h1#center-title {
     font-weight: bold; }
     .file .delete:hover {
       color: #333; }
+
+#sign-in-label {
+  float: left;
+  width: 100%;
+  padding: 10px;
+  color: #333;
+  text-align: center; }
+
+ul#sign-in-links {
+  float: right;
+  width: 100%; }
+  ul#sign-in-links li {
+    float: left;
+    padding: 20px;
+    border-bottom: solid 1px #DDD;
+    width: 100%;
+    font-size: 42px;
+    line-height: 56px;
+    padding: 20px; }
+    ul#sign-in-links li img {
+      width: 48px;
+      margin-right: 16px;
+      margin-top: -4px; }
+    ul#sign-in-links li a {
+      -webkit-transition: color 0.1s linear;
+      -moz-transition: color 0.1s linear;
+      -ms-transition: color 0.1s linear;
+      -o-transition: color 0.1s linear;
+      transition: color 0.1s linear; }

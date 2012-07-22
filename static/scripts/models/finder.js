@@ -16,8 +16,6 @@ define(function (require, exports) {
   exports.Finder = Backbone.Model.extend({
 
     initialize: function () {
-      console.log('init finder model');
-
       var currentUser = new User()
         , that = this;
 

@@ -22,7 +22,7 @@ define(function (require, exports) {
     }
 
   , initialize: function () {
-      console.log('init file model');
+
     }
 
   , upload: function () {
@@ -39,7 +39,7 @@ define(function (require, exports) {
       xhr.file = file;
       xhr.upload.onprogress = function (e) {
         that.onProgress(e, that);
-      }
+      };
       xhr.onreadystatechange = function (e) {
         that.onStateChange(e, that);
       };
@@ -49,13 +49,15 @@ define(function (require, exports) {
 
     // Ajax file upload progress event
   , onProgress: function (e, context) {
-      console.log(e);
+      var percent = Math.round(e.loaded / e.total);
+      $('#progress .bar').css('width', percent + '%');
     }
 
   , onStateChange: function (e, context) {
-      console.log(e);
-
-      context.set('uploaded', true);
+      if (e.currentTarget.readyState === 4) {
+        context.set('uploaded', true);
+      }
+      $('#progress').slideUp();
     }
 
   });

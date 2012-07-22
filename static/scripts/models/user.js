@@ -46,15 +46,14 @@ define(function (require, exports) {
     }
 
   , initialize: function () {
-      console.log('init user model');
-
       this.on('change:id', this.initProviders);
     }
 
   , initProviders: function () {
-      if (this.get('dropbox_id')) this.get('providers').dropbox.active = true;
-      if (this.get('drive_id')) this.get('providers').drive.active = true;
-      if (this.get('box_id')) this.get('providers').box.active = true;
+      if (this.get('has_dropbox')) this.get('providers').dropbox.active = true;
+      if (this.get('has_google')) this.get('providers').drive.active = true;
+      if (this.get('has_box')) this.get('providers').box.active = true;
+      if (this.get('has_sugarsync')) this.get('providers').box.active = true;
     }
 
   });

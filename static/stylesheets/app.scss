@@ -184,6 +184,12 @@ h1#center-title {
   height: 100%;
 }
 
+#progress {
+  display: none;
+  @include border-radius(0);
+  .bar { width: 0%; }
+}
+
 .file {
   display: block;
   float: left;
@@ -224,6 +230,38 @@ h1#center-title {
     font-weight: bold;
     &:hover {
       color: #333;
+    }
+  }
+}
+
+
+#sign-in-label {
+  float: left;
+  width: 100%;
+  padding: 10px;
+  color: #333;
+  text-align: center;
+}
+
+ul#sign-in-links {
+  float: right;
+  width: 100%;
+  li {
+    float: left;
+    padding: 20px;
+    // text-align: center;
+    border-bottom: solid 1px #DDD;
+    width: 100%;
+    font-size: 42px;
+    line-height: 56px;
+    padding: 20px;
+    img {
+      width: 48px;
+      margin-right: 16px;
+      margin-top: -4px;
+    }
+    a {
+      @include transition(color 0.1s linear);
     }
   }
 }

@@ -69,8 +69,6 @@ define(function (require, exports, module) {
           , el: $('#finder-main')
           });
 
-      console.log('account route');
-
       $finderLinks.removeClass('selected');
       $finderLinks.eq(1).addClass('selected');
 

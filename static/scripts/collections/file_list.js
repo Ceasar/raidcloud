@@ -12,7 +12,7 @@ define(function (require, exports) {
     model: File
 
   , initialize: function () {
-      console.log('init file list collection');
+
     }
 
   , uploadFiles: function (data) {
@@ -26,8 +26,6 @@ define(function (require, exports) {
             , name: file.name
             });
 
-        // console.log(fileModel.toJSON());
-        // console.log(fileModel.url());
         fileModel.upload();
         that.add(fileModel);
       });

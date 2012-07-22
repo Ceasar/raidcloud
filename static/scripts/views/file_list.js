@@ -82,10 +82,6 @@ define(function (require, exports) {
     }
 
   , deleteSelected: function (e) {
-      // this.collection.each(function (file) {
-      //   if (file.get('selected')) file.destroy();
-      // });
-
       var length = this.collection.length;
 
       for (var i = 0; i < length; i++) {
@@ -93,7 +89,7 @@ define(function (require, exports) {
         if (file && file.get('selected')) file.destroy();
       }
 
-      this.renderFiles();
+      this.collection.trigger('removeFile');
 
       this.$('#delete-all').slideUp('fast');
     }
@@ -106,6 +102,8 @@ define(function (require, exports) {
       if (!e.dataTransfer) e = e.originalEvent;
 
       this.collection.uploadFiles(e.dataTransfer);
+
+      this.$('#progress').slideDown('fast');
     }
 
   , onDragStart: function (e) {

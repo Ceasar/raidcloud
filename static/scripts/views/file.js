@@ -20,7 +20,8 @@ define(function (require, exports) {
     }
 
   , render: function () {
-      this.$el.html(this.template(this.model.toJSON()));
+      // console.log(this.model.get('raw'));
+      this.$el.html(this.template(this.model.get('raw')));
       this.$el.attr('draggable', 'true');
 
       return this;
