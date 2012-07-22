@@ -31,8 +31,8 @@ define(function (require, exports) {
   , backboneNavigate: function (event) {
       var href = $(event.currentTarget).attr('href');
 
-      // Don't navigate if CTRL, CMD, SHIFT clicked or if href points to an id
-      if (!event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey && !href.match('#')) {
+      // Don't navigate if CTRL, CMD, SHIFT clicked or if href points to logout
+      if (!event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey && !href.match('logout')) {
         event.preventDefault();
         Backbone.history.navigate(href, {trigger: true});
       }
