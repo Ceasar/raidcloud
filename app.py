@@ -54,9 +54,9 @@ BASE_URL = "http://raidcloud.herokuapp.com"
 @app.route('/google')
 def google_login():
     """Sign in with Google."""
-    suffix = request.args.get('next') or request.referrer or None
-    next_url = "%s%s" % (BASE_URL, suffix)
-    callback_url = url_for('google_oauth_authorized', next=next_url)
+    next_url = request.args.get('next') or request.referrer or None
+    suffix = url_for('google_oauth_authorized', next=next_url)
+    callback_url = "%s%s" % (BASE_URL, suffix)
     return google.authorize(callback=callback_url)
 
 
