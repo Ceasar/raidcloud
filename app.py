@@ -274,18 +274,19 @@ class Chunk(db.Model):
 def before_request():
     g.current_user = get_current_user()
 
-@login_required
 @app.route('/')
 @app.route('/account')
+@login_required
 def index():
     return render_template('index.html')
 
 
-@app.route('/user/<id>/files', methods=['POST'])
+@app.route('/users/<id>/files', methods=['POST'])
 @login_required
-def upload():
+def upload(id):
     """Upload a file"""
     uploaded_file = request.files['file']
+    print request
     if uploaded_file is not None:
         filename = secure_filename(uploaded_file.filename)
         uploaded_file.save(os.path.join('tmp', filename))
@@ -294,12 +295,14 @@ def upload():
         db.session.add(_file)
         db.session.commit()
 
-        handle_file(_file)
+        split_file(_file)
+        return jsonify({'success': True})
+    return jsonify({'success': False})
 
 
 NUM_PARTS = 2
 
-def handle_file(_file):
+def split_file(_file):
     """Split the file and upload its parts"""
     if _file is not None:
         pbs.sh('lxsplit-0.2.4/splitfile.sh', 'tmp/' + _file.name, NUM_PARTS)
