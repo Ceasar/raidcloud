@@ -141,7 +141,7 @@ def google_oauth_authorized(resp):
         drive_id = None
         drive_token = resp['access_token']
 
-        headers = {' Authorization': 'OAuth ' + drive_token}
+        headers = {'Authorization': 'OAuth ' + drive_token}
         req = Request('https://www.googleapis.com/oauth2/v1/userinfo',
                       None, headers)
         res = json.loads(urlopen(req).read())
