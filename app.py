@@ -335,9 +335,9 @@ def download_file(user_id, file_id):
     chunks = _file.chunks
     for chunk in chunks:
         if chunk.service is 'dropbox':
-            get_dropbox()
+            get_dropbox(chunk)
         else:
-            get_drive()
+            get_drive(chunk)
     data = []
     for i in xrange(1, NUM_PARTS+1):
         part_filename = "%s.%d" % (_file.name, i)
