@@ -17,8 +17,8 @@ except KeyError:
 
 app.config['GOOGLE_OAUTH_CONSUMER_KEY'] = '575198791092.apps.googleusercontent.com'
 app.config['GOOGLE_OAUTH_CONSUMER_SECRET'] = 'ei7THdOn1OyYCgYL_51ntTqK'
-app.config['DROPBOX_OAUTH_CONSUMER_KEY'] = ''
-app.config['DROPBOX_OAUTH_CONSUMER_SECRET'] = ''
+app.config['DROPBOX_OAUTH_CONSUMER_KEY'] = 'e7fbqqqwfb4zkyo'
+app.config['DROPBOX_OAUTH_CONSUMER_SECRET'] = 'ohx5ci47pm717wh'
 app.secret_key = 'ei7THdOn1OyYCgYL_51ntTqK'
 db = SQLAlchemy(app)
 
@@ -53,7 +53,7 @@ dropbox = oauth.remote_app('dropbox',
 
 @dropbox.tokengetter
 def get_dropbox_token():
-    """Get the google OAuth token in form (token, secret).
+    """Get the dropbox OAuth token in form (token, secret).
     If no token exists, return None instead."""
     return session.get('dropbox_token')
 
@@ -63,6 +63,12 @@ def get_google_token():
     If no token exists, return None instead."""
     return session.get('google_token')
 
+@app.route('/dropbox')
+def dropbox_login():
+    """Sign in with Dropbox."""
+    next_url = request.args.get('next') or request.referrer or None
+    callback_url = url_for('dropbox_oauth_authorized', next=next_url, _external=True)
+    return dropbox.authorize(callback=callback_url)
 
 @app.route('/google')
 def google_login():
