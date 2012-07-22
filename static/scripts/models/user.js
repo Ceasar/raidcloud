@@ -30,6 +30,11 @@ define(function (require, exports) {
         , url: '/box'
         , active: false
         }
+      , sugarsync: {
+          name: 'Sugarsync'
+        , url: '/sugarsync'
+        , active: false
+        }
       }
     }
 
