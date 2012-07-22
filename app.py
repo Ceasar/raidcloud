@@ -437,8 +437,7 @@ def put_drive(chunk):
     }
     chunk.service = 'drive'
     db.session.commit()
-    response = requests.post(url, data=data, headers=headers).text
-    print response
+    response = requests.post(url, data=data, headers=headers)
     chunk.drive_id = response.json['id']
     db.session.commit()
 
