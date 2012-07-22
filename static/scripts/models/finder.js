@@ -25,6 +25,10 @@ define(function (require, exports) {
         success: function (model, response) {
           that.set('owner', model);
         }
+      , error: function (model, response) {
+          // Redirect to login page
+          window.location = '/login';
+        }
       });
     }
 

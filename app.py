@@ -277,7 +277,7 @@ def before_request():
 @app.route('/')
 @app.route('/account')
 def index():
-    return render_template('app.html')
+    return render_template('index.html')
 
 
 @app.route('/user/<id>/files', methods=['POST'])

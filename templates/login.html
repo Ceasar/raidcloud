@@ -1,0 +1,25 @@
+{% extends 'app.html' %}
+
+{% block scripts %}
+<script data-main="static/scripts/login" src="static/scripts/require-jquery.js"></script>
+{% endblock %}
+
+{% block content %}
+
+  <div id="finder-header"></div>
+
+  <div id="finder-sidebar">
+    <ul id="nav">
+      <a href="/login" class="selected">
+        <li><i class="icon-thumbs-up"></i>Log in</li>
+      </a>
+    <ul>
+  </div>
+
+  <div id="finder-main">
+    <a href="/google">Google</a>
+    <a href="/dropbox">Dropbox</a>
+    <a href="/box">Box.net</a>
+  </div>
+
+{% endblock %}
