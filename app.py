@@ -371,7 +371,7 @@ def show_users():
         return jsonify(users=user_ids)
     except:
         db.session.rollback()
-        return jsonify({})
+        return jsonify({users: []})
 
 @app.route('/users/<id>')
 def show_user(id):
