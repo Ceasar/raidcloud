@@ -278,7 +278,7 @@ class Chunk(db.Model):
     parity = db.Column(db.Boolean, nullable=False, default=False)
     service = db.Column(db.String(32), nullable=True)
     name = db.Column(db.String(255), nullable=False)
-    drive_id = db.Column(db.Integer, nullable=True)
+    drive_id = db.Column(db.String(255), nullable=True)
 
 
 ###
