@@ -106,10 +106,10 @@ def get_user_id(username):
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True, nullable=False)
 
-    drive_id = db.Column(db.BigInteger, nullable=True)
+    drive_id = db.Column(db.String(255), nullable=True)
     drive_token = db.Column(db.String(255), nullable=True)
 
-    dropbox_id = db.Column(db.BigInteger, nullable=True)
+    dropbox_id = db.Column(db.String(255), nullable=True)
     dropbox_token = db.Column(db.String(255), nullable=True)
 
     files = db.relation('File', backref='user')
