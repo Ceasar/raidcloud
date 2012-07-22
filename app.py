@@ -28,7 +28,7 @@ google = oauth.remote_app('google',
     authorize_url='https://accounts.google.com/o/oauth2/auth',
     request_token_url=None,
     request_token_params={
-        'scope': 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/access.file',
+        'scope': 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/drive.file',
         'response_type': 'code'
         },
     access_token_url='https://accounts.google.com/o/oauth2/token',
