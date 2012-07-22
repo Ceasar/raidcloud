@@ -1,4 +1,32 @@
-<script type="text/x-underscore-template" id="tmpl-main">
-  <h2>Hello world template</h2>
+<script type="text/x-underscore-template" id="tmpl-finder">
+
+  <div id="finder-header"></div>
+
+  <div id="finder-sidebar">
+    <ul id="nav">
+      <a href="/files" class="selected"><li>Files</li></a>
+      <a href="/account"><li>Account</li></a>
+      <a href="/logout"><li>Logout</li></a>
+    <ul>
+  </div>
+
+  <div id="finder-main">
+    <div class="no-files">
+      Drag files here to get started with Raidcloud
+    </div>
+    <div class="file-list">
+
+    </div>
+  </div>
+
+</script>
+
+
+<script type="text/x-underscore-template" id="tmpl-file">
+
+  <div class="icon">
+
+  </div>
+  <span class="filename"><%= name %></span>
 
 </script>

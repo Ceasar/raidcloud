@@ -59,9 +59,9 @@ def before_request():
 
 
 @app.route('/')
+@app.route('/account')
 def index():
     return render_template('app.html')
-    # return 'Hello World!'
 
 
 @app.route('/register', methods=['GET', 'POST'])

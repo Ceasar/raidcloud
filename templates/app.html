@@ -8,14 +8,21 @@
     <link href="static/images/favicon.png" rel="shortcut icon" />
 
     <link href="static/stylesheets/app.css" rel="stylesheet" />
+    <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+
     <script data-main="static/scripts/app" src="static/scripts/require-jquery.js"></script>
   </head>
   <body>
     <div class="container" id="main">
-      <h1>Main</h1>
+      <div id="finder">
+        <!-- {% block body %}{% endblock %} -->
+        <div id="app">
+        </div>
+      </div>
     </div>
   </body>
 
 {% include '_main.html' %}
+{% include '_account.html' %}
 
 </html>

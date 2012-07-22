@@ -5,46 +5,54 @@ define(function (require, exports, module) {
   var $           = require('jquery')
     , _           = require('underscore')
     , Backbone    = require('backbone')
-    , utils       = require('utils');
+    , utils       = require('utils')
+    , Finder      = require('models/finder').Finder
+    , User        = require('models/user').User
+    , FinderView  = require('views/finder').FinderView
+    , AccountView = require('views/account').AccountView;
 
   require('lib/bootstrap-modal');
-
-  var AppModel = Backbone.Model.extend({
-
-    initialize: function () {
-      console.log('init model');
-    }
-
-  });
-
-  var AppView = Backbone.View.extend({
-
-    template: utils.template('tmpl-main')
-
-  , render: function () {
-      this.$el.html(this.template(this.model.toJSON()));
-    }
-
-  });
 
   var Router = Backbone.Router.extend({
 
     routes: {
-      '': 'app'
+      'files': 'files'
+    , 'account': 'account'
+    , 'logout': 'logout'
     }
 
-  , app: function () {
-      var appModel = new AppModel()
-        , appView  = new AppView({
-            model: appModel
-          , el: $('#main')
+  , files: function () {
+      var fileList      = new FileList()
+        , fileListView  = new FileListView({
+            collection: fileList
+          , el: $('#finder-main')
           });
 
-      console.log('app route');
-      appView.render();
+      console.log('files route');
+      fileListView.render();
+    }
+
+  , account: function () {
+      var user = new User({
+            name: 'Current User'
+          })
+        , accountView = new AccountView({
+            model: user
+          , el: $('#finder-main')
+          });
+
+      console.log('account route');
+      accountView.render();
     }
 
   });
+
+  var finder      = new Finder()
+    , finderView  = new FinderView({
+        model: finder
+      , el: $('#app')
+      });
+  finderView.render();
 
   var router = new Router();
   Backbone.history.start({
