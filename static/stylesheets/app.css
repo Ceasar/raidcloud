@@ -4047,6 +4047,7 @@ h1#center-title {
       #finder-main ul#providers li img {
         float: left;
         margin: 10px;
+        width: 32px;
         opacity: 0.8;
         filter: alpha(opacity=80); }
       #finder-main ul#providers li p {

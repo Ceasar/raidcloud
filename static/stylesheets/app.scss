@@ -162,6 +162,7 @@ h1#center-title {
       img {
         float: left;
         margin: 10px;
+        width: 32px;
         @include opacity(80);
       }
       p {

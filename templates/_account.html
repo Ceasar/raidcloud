@@ -10,14 +10,14 @@
       <% if (provider.active) { %>
         <li id="<%= slug %>" class="active">
           <h1><%= provider.name %></h1>
-          <img src="static/images/success.png" />
+          <img src="static/images/<%= slug %>.png" />
           <p>Successfully linked.</p>
         </li>
       <% } else { %>
         <a href="<%= provider.url %>">
           <li id="<%= slug %>">
             <h1><%= provider.name %></h1>
-            <img src="static/images/error.png" />
+            <img src="static/images/warning.png" />
             <p>Add more clouds!</p>
           </li>
         </a>
