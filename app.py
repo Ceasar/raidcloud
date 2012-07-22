@@ -85,11 +85,12 @@ def google_oauth_authorized(resp):
             # Update the drive_token if needed
             if user.drive_token != drive_token:
                 user.drive_token = drive_token
-                user.save()
+                db.session.commit()
         else:
             # Create a new user
             user = User(drive_id=drive_id, drive_token=drive_token)
-            user.save()
+            db.session.add(user)
+            db.session.commit()
     return redirect(request.args.get('next') or url_for('index'))
 
 
