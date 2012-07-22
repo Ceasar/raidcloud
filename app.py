@@ -234,6 +234,7 @@ class Chunk(db.Model):
     file_id = db.Column(db.Integer, db.ForeignKey('file.id'), nullable=False)
     parity = db.Column(db.Boolean, nullable=False, default=False)
 
+
 ###
 # Routes
 ###
@@ -243,6 +244,7 @@ class Chunk(db.Model):
 def before_request():
     g.current_user = get_current_user()
 
+@login_required
 @app.route('/')
 @app.route('/account')
 def index():

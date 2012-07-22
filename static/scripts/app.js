@@ -15,8 +15,28 @@ define(function (require, exports, module) {
 
   require('lib/bootstrap-modal');
 
-  var finder = new Finder()
+  var finder      = new Finder()
+    , finderView  = new FinderView({
+        model: finder
+      , el: $('#app')
+      })
     , $finderLinks;
+
+  var init = function () {
+    finderView.render();
+    finderView.$el.parent().animate({
+      'margin-top': 0
+    , 'opacity': 1
+    }, 500).addClass('show');
+
+    $finderLinks = $('#finder-sidebar a');
+
+    var router = new Router();
+    Backbone.history.start({
+      pushState: true
+    , hashChange: false
+    });
+  };
 
   var Router = Backbone.Router.extend({
 
@@ -27,15 +47,14 @@ define(function (require, exports, module) {
     }
 
   , files: function () {
-      var fileList      = new FileList()
+      var user          = finder.get('owner')
+        , fileList      = new FileList(user.files)
         , fileListView  = new FileListView({
             collection: fileList
           , el: $('#finder-main')
           });
 
-      fileList.setOption('ownerId', finder.get('owner'));
-
-      console.log('files route');
+      fileList.setOption('ownerId', finder.get('owner').id);
 
       $finderLinks.removeClass('selected');
       $finderLinks.eq(0).addClass('selected');
@@ -60,23 +79,6 @@ define(function (require, exports, module) {
 
   });
 
-
-  var finderView  = new FinderView({
-        model: finder
-      , el: $('#app')
-      });
-  finderView.render();
-  finderView.$el.parent().animate({
-    'margin-top': 0
-  , 'opacity': 1
-  }, 500).addClass('show');
-
-  $finderLinks = $('#finder-sidebar a');
-
-  var router = new Router();
-  Backbone.history.start({
-    pushState: true
-  , hashChange: false
-  });
+  finder.on('change:owner', init);
 
 });
