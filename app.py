@@ -91,7 +91,19 @@ def google_oauth_authorized(resp):
         headers = {'Authorization': 'OAuth ' + drive_token}
         req = Request('https://www.googleapis.com/oauth2/v1/userinfo',
                       None, headers)
-        res = json.loads(urlopen(req))
+        res = json.loads(urlopen(req).read())
+        """
+        {
+             "id": "117416155311954994698",
+             "name": "Ceasar Bautista",
+             "given_name": "Ceasar",
+             "family_name": "Bautista",
+             "link": "https://plus.google.com/117416155311954994698",
+             "picture": "https://lh4.googleusercontent.com/-B2ePTSgN6G8/AAAAAAAAAAI/AAAAAAAAAKE/rCvvdkB3Mpo/photo.jpg",
+             "gender": "male",
+             "locale": "en-US"
+        }
+        """
         drive_id = res['id']
 
         session['google_token'] = (drive_id, drive_token)
