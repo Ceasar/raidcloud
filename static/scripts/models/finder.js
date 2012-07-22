@@ -6,7 +6,7 @@ define(function (require, exports) {
     , Backbone    = require('backbone')
     , utils       = require('utils')
     , File        = require('models/file')
-    , User        = require('models/user');
+    , User        = require('models/user').User;
 
   /*
    * Attributes
@@ -18,9 +18,13 @@ define(function (require, exports) {
     initialize: function () {
       console.log('init finder model');
 
-      $.get('/user', function (resp) {
-        var currentUser = new User(resp);
-        this.set('owner', currentUser)
+      var currentUser = new User()
+        , that = this;
+
+      currentUser.fetch({
+        success: function (model, response) {
+          that.set('owner', model);
+        }
       });
     }
 

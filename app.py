@@ -264,6 +264,7 @@ class Chunk(db.Model):
     service = db.Column(db.String(32), nullable=False)
     name = db.Column(db.String(255), nullable=False)
 
+
 ###
 # Routes
 ###
@@ -273,6 +274,7 @@ class Chunk(db.Model):
 def before_request():
     g.current_user = get_current_user()
 
+@login_required
 @app.route('/')
 @app.route('/account')
 def index():
