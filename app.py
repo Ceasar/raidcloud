@@ -74,6 +74,7 @@ def dropbox_login():
     next_url = request.args.get('next') or request.referrer
     callback_url = url_for('dropbox_oauth_authorized', next=next_url,
                            _external=True)
+    app.logger.debug(callback_url)
     return dropbox.authorize(callback=callback_url)
 
 

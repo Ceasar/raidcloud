@@ -352,7 +352,8 @@ class OAuthRemoteApp(object):
             'code':             request.args.get('code'),
             'client_id':        self.consumer_key,
             'client_secret':    self.consumer_secret,
-            'redirect_uri':     session.get(self.name + '_oauthredir')
+            'redirect_uri':     session.get(self.name + '_oauthredir'),
+            'oauth_callback':     session.get(self.name + '_oauthredir')
         }
         remote_args.update(self.access_token_params)
         if self.access_token_method == 'POST':
