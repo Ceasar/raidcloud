@@ -1,6 +1,6 @@
 import os
 import json
-from urllib2 import Request, urlopen, URLError
+from urllib2 import Request, urlopen
 
 from flask import Flask, request, session, g, redirect, url_for, \
              render_template, flash
@@ -16,6 +16,7 @@ try:
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 except KeyError:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://raid:cloud@localhost/raidcloud'
+
 
 app.config['GOOGLE_OAUTH_CONSUMER_KEY'] = '575198791092.apps.googleusercontent.com'
 app.config['GOOGLE_OAUTH_CONSUMER_SECRET'] = 'ei7THdOn1OyYCgYL_51ntTqK'
@@ -59,25 +60,53 @@ def get_dropbox_token():
     If no token exists, return None instead."""
     return session.get('dropbox_token')
 
+
 @google.tokengetter
 def get_google_token():
     """Get the google OAuth token in form (token, secret).
     If no token exists, return None instead."""
     return session.get('google_token')
 
+
 @app.route('/dropbox')
 def dropbox_login():
     """Sign in with Dropbox."""
     next_url = request.args.get('next') or request.referrer or None
-    callback_url = url_for('dropbox_oauth_authorized', next=next_url, _external=True)
+    callback_url = url_for('dropbox_oauth_authorized', next=next_url,
+                           _external=True)
     return dropbox.authorize(callback=callback_url)
+
 
 @app.route('/google')
 def google_login():
     """Sign in with Google."""
     next_url = request.args.get('next') or request.referrer or None
-    callback_url = url_for('google_oauth_authorized', next=next_url, _external=True)
+    callback_url = url_for('google_oauth_authorized', next=next_url,
+                           _external=True)
     return google.authorize(callback=callback_url)
+
+
+@app.route('/dropbox_oauth_authorized')
+@dropbox.authorized_handler
+def dropbox_oauth_authorized(resp):
+    """Store the oauth_token and secret and redirect."""
+    if resp is not None:
+        dropbox_id = None
+        dropbox_token = resp['access_token']
+
+        session['google_token'] = (dropbox_id, dropbox_token)
+        user = User.query.filter_by(dropbox_id=dropbox_id).first()
+        if user:
+            # Update the dropbox_token if needed
+            if user.dropbox_token != dropbox_token:
+                user.dropbox_token = dropbox_token
+                db.session.commit()
+        else:
+            # Create a new user
+            user = User(dropbox_id=dropbox_id, dropbox_token=dropbox_token)
+            db.session.add(user)
+            db.session.commit()
+    return redirect(request.args.get('next') or url_for('index'))
 
 
 @app.route('/google_oauth_authorized')
