@@ -12,7 +12,7 @@ int main (int argc, char **argv) {
     return -1;
   }
   FILE *file1 = fopen(argv[1], "wb");
-  if (file1 < 0) {
+  if (file1 < 0 ) {
     printf("error opening file\n");
     return -1;
   }

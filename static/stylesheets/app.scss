@@ -1,10 +1,17 @@
 @import "bootstrap/bootstrap";
+@import "custom_mixins";
 
 /* Globals */
 * {
   -webkit-box-sizing: border-box;
      -moz-box-sizing: border-box;
           box-sizing: border-box;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 body {
@@ -38,7 +45,6 @@ h1#center-title {
   width: 136px;
   color: #333;
   ul {
-    list-style: none;
     padding: 10px 0;
     margin: 0;
     li {
@@ -84,11 +90,70 @@ h1#center-title {
     border: dashed 4px #CCC;
     @include border-radius(10px);
   }
+
+  .file-list {
+    padding: 10px;
+    float: left;
+    width: 100%;
+    height: 100%;
+  }
+
+  #header {
+    padding: 10px;
+    margin-bottom: 10px;
+    font-size: 32px;
+    line-height: 40px;
+    text-shadow: 0 1px 1px white;
+    border-bottom: solid 1px #BBB;
+    @include gradient-vertical(#EEE, #DDD);
+  }
+
+  ul#providers {
+    padding: 10px;
+    float: left;
+    font-size: 20px;
+    line-height: 24px;
+    width: 300px;
+    li {
+      float: left;
+      margin-bottom: 10px;
+      padding: 10px;
+      width: 100%;
+      background: #555;
+      color: white;
+      @include border-radius(3px);
+    }
+  }
 }
 
 .file {
   display: block;
-  width: 100px;
-  height: 120px;
-
+  float: left;
+  width: 180px;
+  padding: 5px;
+  text-decoration: none;
+  cursor: pointer;
+  color: inherit;
+  border: solid 1px transparent;
+  @include border-radius(5px);
+  @include transition(all 0.1s linear);
+  &:hover {
+    background: #EEE;
+  }
+  &:active, &.selected {
+    background: #427fd1;
+    color: white;
+    border-color: darken(#427fd1, 20%);
+  }
+  .icon {
+    float: left;
+  }
+  .filename, .modified {
+    float: left;
+    width: 120px;
+    @include text-overflow;
+  }
+  .filename {
+    margin-top: 5px;
+  }
 }

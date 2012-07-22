@@ -2,21 +2,26 @@
 define(function (require, exports, module) {
   'use strict';
 
-  var $           = require('jquery')
-    , _           = require('underscore')
-    , Backbone    = require('backbone')
-    , utils       = require('utils')
-    , Finder      = require('models/finder').Finder
-    , User        = require('models/user').User
-    , FinderView  = require('views/finder').FinderView
-    , AccountView = require('views/account').AccountView;
+  var $             = require('jquery')
+    , _             = require('underscore')
+    , Backbone      = require('backbone')
+    , utils         = require('utils')
+    , Finder        = require('models/finder').Finder
+    , FileList      = require('collections/file_list').FileList
+    , User          = require('models/user').User
+    , FinderView    = require('views/finder').FinderView
+    , FileListView  = require('views/file_list').FileListView
+    , AccountView   = require('views/account').AccountView;
 
   require('lib/bootstrap-modal');
+
+  var finder = new Finder()
+    , $finderLinks;
 
   var Router = Backbone.Router.extend({
 
     routes: {
-      'files': 'files'
+      '': 'files'
     , 'account': 'account'
     , 'logout': 'logout'
     }
@@ -28,31 +33,41 @@ define(function (require, exports, module) {
           , el: $('#finder-main')
           });
 
+      fileList.setOption('ownerId', finder.get('owner'));
+
       console.log('files route');
+
+      $finderLinks.removeClass('selected');
+      $finderLinks.eq(0).addClass('selected');
+
       fileListView.render();
     }
 
   , account: function () {
-      var user = new User({
-            name: 'Current User'
-          })
+      var user = finder.get('owner')
         , accountView = new AccountView({
             model: user
           , el: $('#finder-main')
           });
 
       console.log('account route');
+
+      $finderLinks.removeClass('selected');
+      $finderLinks.eq(1).addClass('selected');
+
       accountView.render();
     }
 
   });
 
-  var finder      = new Finder()
-    , finderView  = new FinderView({
+
+  var finderView  = new FinderView({
         model: finder
       , el: $('#app')
       });
   finderView.render();
+
+  $finderLinks = $('#finder-sidebar a');
 
   var router = new Router();
   Backbone.history.start({

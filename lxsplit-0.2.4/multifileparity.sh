@@ -9,7 +9,7 @@ echo $2
 out="$1"
 
 # the first file is our starting point
-cp "$(echo $2)" "$(echo $out)"
+cp "$2" "$out"
 
 # cuts out our output and first file from the args, 
 # so our loop loops over the files we want

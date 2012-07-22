@@ -8,11 +8,17 @@ define(function (require, exports) {
 
   exports.FileView = Backbone.View.extend({
 
-    template: utils.template('tmpl-file')
+    tagName: 'a'
+
+  , className: 'file'
+
+  , template: utils.template('tmpl-file')
 
   , render: function () {
       this.$el.html(this.template(this.model.toJSON()));
       this.$el.attr('draggable', 'true');
+
+      return this;
     }
 
   });

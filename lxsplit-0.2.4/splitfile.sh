@@ -25,7 +25,7 @@ chunksizehuman=$(echo "$chunksize" | bc)
 rm "$1"
 
 # find out which part file is the last one, so we can calculate how much we need to pad
-files=$(ls | grep "$1")
+files=$(ls -1 | grep "$1")
 lastfile=$( echo "$files" | tail -1 )
 
 lastfilesize=$(ls -l "$lastfile" | awk '{ print $5}')
@@ -40,14 +40,22 @@ do
   printf '\0' >> $lastfile
 done
 
-args=""
-for f in $files
-do
-  args=$args\ "$f"
-done
 
 # make parity file
-./multifileparity.sh "$1".par $args
+args=""
+IFS=$'\n'
+out="$1".par
+cp $( echo "$files" | head -1 ) "$out"
+for f in $( echo "$files" | tail +1 )
+do
+  ./fileparity "$f" "$out" > ./tempparity
+  mv -f ./tempparity "$out"
+done
+
+files=$(ls -1 | grep -E "$1.(par|[0-9]{3})")
+for f in $files
+do
+  mv "$f" ../tmp/"$f"
+done
 
 echo "$numpadbytes"
-echo $lastfile

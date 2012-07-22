@@ -4,21 +4,24 @@ define(function (require, exports) {
   var $           = require('jquery')
     , _           = require('underscore')
     , Backbone    = require('backbone')
-    , utils       = require('utils');
+    , utils       = require('utils')
+    , File        = require('models/file')
+    , User        = require('models/user');
 
   /*
    * Attributes
-   * - owner_id
+   * - owner
    * - files
    */
   exports.Finder = Backbone.Model.extend({
 
     initialize: function () {
       console.log('init finder model');
-    }
 
-  , uploadFiles: function (data) {
-      // Do ajax request here
+      $.get('/user', function (resp) {
+        var currentUser = new User(resp);
+        this.set('owner', currentUser)
+      });
     }
 
   });
