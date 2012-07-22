@@ -304,7 +304,6 @@ def upload(id):
         files = User.query.get(id).files
     else:
         """Upload a file"""
-        print request
         uploaded_file = request.files['file']
         if uploaded_file is not None:
             filename = secure_filename(uploaded_file.filename)
@@ -420,6 +419,7 @@ def get_drive(chunk):
     }
     data = None
     resp = requests.get(url, data=data, headers=headers)
+    print resp
     downloadURL = resp.json['downloadUrl']
     response = requests.get(downloadURL, data=data, headers=headers)
     out = open('tmp/' + chunk.name, 'w')
@@ -438,10 +438,7 @@ def put_drive(chunk):
     chunk.service = 'drive'
     db.session.commit()
     response = requests.post(url, data=data, headers=headers)
-    print response
     chunk.drive_id = response.json['id']
-    print response.json
-    print response.json['id']
     db.session.commit()
 
 @app.route('/foo')
