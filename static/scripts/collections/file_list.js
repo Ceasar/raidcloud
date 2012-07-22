@@ -26,8 +26,6 @@ define(function (require, exports) {
             , name: file.name
             });
 
-        // console.log(fileModel.toJSON());
-        // console.log(fileModel.url());
         fileModel.upload();
         that.add(fileModel);
       });
