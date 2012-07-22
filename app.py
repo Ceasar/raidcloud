@@ -98,7 +98,7 @@ def dropbox_oauth_authorized():
     access_token = sess.obtain_access_token(request_token)
     dropbox_id, dropbox_token = access_token.key, access_token.secret
 
-    user = get_current_user() or User.query.filter_by(dropbox_id==dropbox_id).first()
+    user = get_current_user() or User.query.filter_by(dropbox_id=dropbox_id).first()
     if user:
         # Add/Update user dropbox creds
         if user.dropbox_token != dropbox_token:
@@ -140,7 +140,7 @@ def google_oauth_authorized(resp):
         """
         drive_id = res['id']
 
-        user = get_current_user() or User.query.filter_by(drive_id==drive_id).first()
+        user = get_current_user() or User.query.filter_by(drive_id=drive_id).first()
         if user:
             # Add/Update user drive creds
             if user.drive_token != drive_token:
