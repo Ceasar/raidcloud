@@ -98,7 +98,7 @@ def dropbox_oauth_authorized():
     access_token = sess.obtain_access_token(request_token)
     dropbox_id, dropbox_token = access_token.key, access_token.secret
 
-    user = get_current_user() or User.query.filter_by(dropbox_id=dropbox_id).first()
+    user = g.current_user or User.query.filter_by(dropbox_id=dropbox_id).first()
     if user:
         # Add/Update user dropbox creds
         if user.dropbox_token != dropbox_token:
@@ -113,6 +113,11 @@ def dropbox_oauth_authorized():
 
     return redirect(request.args.get('next') or url_for('index'))
 
+
+@app.route('/set_session')
+def set_session():
+    session['user_id'] = 1
+    return to_json(get_current_user())
 
 @app.route('/google_oauth_authorized')
 @google.authorized_handler
@@ -140,7 +145,7 @@ def google_oauth_authorized(resp):
         """
         drive_id = res['id']
 
-        user = get_current_user() or User.query.filter_by(drive_id=drive_id).first()
+        user = g.current_user or User.query.filter_by(drive_id=drive_id).first()
         if user:
             # Add/Update user drive creds
             if user.drive_token != drive_token:
@@ -158,9 +163,9 @@ def google_oauth_authorized(resp):
 
 def get_current_user():
     """Convenience method to look up the current user's model"""
-    if hasattr(session, 'user_id') and session.user_id is not None:
-        return User.query.get(session.user_id)
-    else:
+    try:
+        return User.query.get(session['user_id'])
+    except:
         return None
 
 def get_user_id(username):
@@ -236,11 +241,7 @@ class Chunk(db.Model):
 
 @app.before_request
 def before_request():
-    g.user = None
-    if 'google_token' in session:
-        drive_id, drive_token = session['google_token']
-        g.user = User.query.filter_by(drive_id=drive_id).first()
-
+    g.current_user = get_current_user()
 
 @app.route('/')
 @app.route('/account')
