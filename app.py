@@ -1,6 +1,5 @@
 import os
-
-import M2Crypto
+import random
 import uuid
 
 from flask.ext.sqlalchemy import SQLAlchemy
@@ -75,8 +74,13 @@ def get_user_id(username):
 # Models
 ###
 
+
+def random_bytes(size):
+    return bytes(random.randrange(0, 256) for i in range(size))
+
+
 def _make_auth_token():
-    return str(uuid.UUID(bytes=M2Crypto.m2.rand_bytes(16)))
+    return str(uuid.UUID(bytes=random_bytes(16)))
 
 
 class User(db.Model):
