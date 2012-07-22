@@ -1,13 +1,15 @@
 import os
 import json
 from urllib2 import Request, urlopen
+import webbrowser
 
 from flask import Flask, request, session, g, redirect, url_for, \
              render_template, flash
-from oauth import OAuth
+from flask_oauth import OAuth
 from flask.ext.sqlalchemy import SQLAlchemy
 
 from auth import authenticate
+import dropbox
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -43,22 +45,19 @@ google = oauth.remote_app('google',
     consumer_secret=app.config['GOOGLE_OAUTH_CONSUMER_SECRET']
 )
 
-dropbox = oauth.remote_app('dropbox',
-    base_url='https://api.dropbox.com/1',
-    authorize_url='https://dropbox.com/1/oauth/authorize',
-    request_token_url='https://api.dropbox.com/1/oauth/request_token',
-    access_token_url='https://api.access.com/1/oauth/access_token',
-    access_token_method='POST',
-    consumer_key=app.config['DROPBOX_OAUTH_CONSUMER_KEY'],
-    consumer_secret=app.config['DROPBOX_OAUTH_CONSUMER_SECRET']
-)
 
+def get_client(access_token):
+    app_key = app.config['DROPBOX_OAUTH_CONSUMER_KEY']
+    app_secret = app.config['DROPBOX_OAUTH_CONSUMER_SECRET']
 
-@dropbox.tokengetter
-def get_dropbox_token():
-    """Get the dropbox OAuth token in form (token, secret).
-    If no token exists, return None instead."""
-    return session.get('dropbox_token')
+    sess = dropbox.session.DropboxSession(app_key, app_secret, 'app_folder')
+    request_token = sess.obtain_request_token()
+
+    next_url = request.args.get('next') or request.referrer
+    callback = url_for('dropbox_oauth_authorized', next=next_url,
+                           _external=True)
+    url = sess.build_authorize_url(request_token, oauth_callback=callback)
+    webbrowser.open(url)
 
 
 @google.tokengetter
@@ -71,11 +70,18 @@ def get_google_token():
 @app.route('/dropbox')
 def dropbox_login():
     """Sign in with Dropbox."""
+    app_key = app.config['DROPBOX_OAUTH_CONSUMER_KEY']
+    app_secret = app.config['DROPBOX_OAUTH_CONSUMER_SECRET']
+
+    sess = dropbox.session.DropboxSession(app_key, app_secret, 'app_folder')
+    request_token = sess.obtain_request_token()
+    session['dropbox_key'] = request_token
+
     next_url = request.args.get('next') or request.referrer
-    callback_url = url_for('dropbox_oauth_authorized', next=next_url,
+    callback = url_for('dropbox_oauth_authorized', next=next_url,
                            _external=True)
-    app.logger.debug(callback_url)
-    return dropbox.authorize(callback=callback_url)
+    url = sess.build_authorize_url(request_token, oauth_callback=callback)
+    return redirect(url)
 
 
 @app.route('/google')
@@ -88,25 +94,30 @@ def google_login():
 
 
 @app.route('/dropbox_oauth_authorized')
-@dropbox.authorized_handler
-def dropbox_oauth_authorized(resp):
+def dropbox_oauth_authorized():
     """Store the oauth_token and secret and redirect."""
-    if resp is not None:
-        dropbox_id = None
-        dropbox_token = resp['access_token']
 
-        session['google_token'] = (dropbox_id, dropbox_token)
-        user = User.query.filter_by(dropbox_id=dropbox_id).first()
-        if user:
-            # Update the dropbox_token if needed
-            if user.dropbox_token != dropbox_token:
-                user.dropbox_token = dropbox_token
-                db.session.commit()
-        else:
-            # Create a new user
-            user = User(dropbox_id=dropbox_id, dropbox_token=dropbox_token)
-            db.session.add(user)
+    app_key = app.config['DROPBOX_OAUTH_CONSUMER_KEY']
+    app_secret = app.config['DROPBOX_OAUTH_CONSUMER_SECRET']
+
+    sess = dropbox.session.DropboxSession(app_key, app_secret, 'app_folder')
+
+    request_token = session['dropbox_key']
+    access_token = sess.obtain_access_token(request_token)
+    session['dropbox_token'] = access_token
+    dropbox_id, dropbox_token = access_token.key, access_token.secret
+
+    user = User.query.filter_by(dropbox_id=dropbox_id).first()
+    if user:
+        # Update the dropbox_token if needed
+        if user.dropbox_token != dropbox_token:
+            user.dropbox_token = dropbox_token
             db.session.commit()
+    else:
+        # Create a new user
+        user = User(dropbox_id=dropbox_id, dropbox_token=dropbox_token)
+        db.session.add(user)
+        db.session.commit()
     return redirect(request.args.get('next') or url_for('index'))
 
 
