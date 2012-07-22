@@ -338,18 +338,34 @@ NUM_PARTS = 2
 def split_file(_file):
     """Split the file and upload its parts"""
     if _file is not None:
-        os.chdir('tmp')
-        size = os.path.getsize(_file.name)
-        chunk_size = (size + NUM_PARTS - 1) / NUM_PARTS
-        subprocess.call(['../lxsplit-0.2.4/lxsplit', '-s', '../tmp/' + _file.name, str(chunk_size) + 'b'])
-        os.remove(_file.name)
-        os.chdir('../')
+        f = open('tmp/' + _file.name, 'rb')
+        data = f.read()
+        f.close()
+
+        bytes = len(data)
+        inc = (bytes+2)/2
+        num = 1
+        for i in xrange(0, bytes+1, inc):
+            fn1 = 'tmp/' + str(_file.name) + '.' + str(num)
+            f = open(fn1, 'wb')
+            f.write(data[i:i+inc])
+            f.close()
+            num += 1
+
+        # Fail 2
+        #os.chdir('tmp')
+        #size = os.path.getsize(_file.name)
+        #chunk_size = (size + NUM_PARTS - 1) / NUM_PARTS
+        #subprocess.call(['../lxsplit-0.2.4/lxsplit', '-s', '../tmp/' + _file.name, str(chunk_size) + 'b'])
+        #os.remove(_file.name)
+        #os.chdir('../')
+
+        # Fail 1
         #os.chdir('lxsplit-0.2.4')
         #os.popen('./splitfile.sh %s %d' % (_file.name, NUM_PARTS))
         #os.chdir('../')
-        print os.getcwd()
     for i in xrange(1, NUM_PARTS+1):
-        part_filename = "%s.%03d" % (_file.name, i)
+        part_filename = "%s.%d" % (_file.name, i)
         chunk = Chunk(file=_file, parity=False, name=part_filename)
         db.session.add(chunk)
         db.session.commit()
