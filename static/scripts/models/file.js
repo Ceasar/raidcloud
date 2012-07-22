@@ -57,6 +57,7 @@ define(function (require, exports) {
 
   , onStateChange: function (e, context) {
       if (e.currentTarget.readyState === 4) {
+        context.set('id', e.currentTarget.response.result.id);
         context.set('uploaded', true);
       }
       $('#progress').slideUp();
