@@ -325,7 +325,7 @@ def upload(id):
 @app.route('/users/<user_id>/files/<file_id>', methods=['GET'])
 @login_required
 def get_file(user_id, file_id):
-    return to_json(File.query.get(file_id))
+    return to_json(File.query.get(file_id).first())
 
 
 @app.route('/users/<user_id>/files/<file_id>/download', methods=['GET'])
