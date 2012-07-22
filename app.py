@@ -299,9 +299,7 @@ def index():
 @login_required
 def upload(id):
     if request.method == 'GET':
-        files = db.session.execute('SELECT id from files where file.user_id == %d' % id).fetchall()
-        file_ids = [row[0] for row in files]
-        return jsonify(files=file_ids)
+        files = User.query.get(id).files
     else:
         """Upload a file"""
         print request
@@ -331,7 +329,25 @@ def get_file(user_id, file_id):
 @app.route('/users/<user_id>/files/<file_id>/download', methods=['GET'])
 @login_required
 def download_file(user_id, file_id):
-    pass
+    _file = File.query.get(file_id)
+    chunks = _file.chunks
+    for chunk in chunks:
+        if chunk.service is 'dropbox':
+            get_dropbox()
+        else:
+            get_drive()
+    data = []
+    for i in xrange(1, NUM_PARTS+1):
+        part_filename = "%s.%d" % (_file.name, i)
+        f = open('tmp/' + part_filename, 'rb')
+        data.append(f.read())
+        f.close()
+
+    f = open('tmp/' + _file.name, 'wb')
+    for datum in data:
+        f.write(data)
+
+    return Response(f.read(), mimetype='application/binary')
 
 NUM_PARTS = 2
 
