@@ -344,11 +344,7 @@ def download_file(user_id, file_id):
         data.append(f.read())
         f.close()
 
-    f = open('tmp/' + _file.name, 'wb')
-    for datum in data:
-        f.write(datum)
-
-    return Response(f.read(), mimetype='application/binary')
+    return Response(''.join(data), mimetype='application/binary')
 
 NUM_PARTS = 2
 
