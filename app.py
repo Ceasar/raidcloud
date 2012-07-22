@@ -9,6 +9,7 @@ from functools import wraps
 
 import pbs
 
+import requests
 from flask import Flask, json, request, session, g, redirect, url_for, \
              render_template, flash
 from flask_oauth import OAuth
@@ -311,7 +312,10 @@ def split_file(_file):
         chunk = Chunk(file=_file, parity=False, name=part_filename)
         db.session.add(chunk)
         db.session.commit()
-        put_dropbox(chunk)
+        if i == 0:
+            put_dropbox(chunk)
+        else:
+            put_drive(chunk)
 
 
 def put_dropbox(chunk):
@@ -333,11 +337,23 @@ def get_dropbox(chunk):
         out.write(response.read())
 
 
+def put_drive(chunk):
+    # drive_token = g.current_user.drive_token
+    drive_token = 'ya29.AHES6ZROMHvNXdvFM_ewL50LghsZ0RNBykThcoBqpSP55sV8'
+    url = "https://www.googleapis.com/upload/drive/v2/files?uploadType=media"
+    data = open(chunk).read()
+    headers = {
+        'Content-Type': '',
+        'Authorization': 'OAuth ' + drive_token
+    }
+    return requests.post(url, data=data, headers=headers).text
+
+
 @app.route('/foo')
 def foo():
     try:
-        show = [session['user_id'], g.current_user.dropbox_id]
-        return str(show)
+        resp = put_drive('app.py')
+        return str(resp)
     except Exception as e:
         return str(e)
 
