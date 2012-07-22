@@ -1,4 +1,5 @@
 import os
+import json
 from urllib2 import Request, urlopen, URLError
 
 from flask import Flask, request, session, g, redirect, url_for, \
@@ -87,13 +88,14 @@ def google_oauth_authorized(resp):
         drive_id = None
         drive_token = resp['access_token']
 
-        headers = {'Authorization': 'OAuth '+access_token}
+        headers = {'Authorization': 'OAuth ' + drive_token}
         req = Request('https://www.googleapis.com/oauth2/v1/userinfo',
                       None, headers)
-        res = urlopen(req)
+        res = json.loads(urlopen(req))
+        drive_id = res['id']
 
         session['google_token'] = (drive_id, drive_token)
-        user = User.query.all().first()
+        user = User.query.filter_by(drive_id=drive_id).first()
         if user:
             # Update the drive_token if needed
             if user.drive_token != drive_token:
