@@ -262,6 +262,7 @@ class Chunk(db.Model):
     file_id = db.Column(db.Integer, db.ForeignKey('file.id'), nullable=False)
     parity = db.Column(db.Boolean, nullable=False, default=False)
     service = db.Column(db.String(32), nullable=False)
+    name = db.Column(db.String(255), nullable=False)
 
 
 ###
@@ -281,34 +282,52 @@ def index():
 
 
 @app.route('/user/<id>/files', methods=['POST'])
+@login_required
 def upload():
     """Upload a file"""
-    file = request.files['file']
-    if file is not None:
-        filename = secure_filename(file.filename)
-        file.save(os.path.join('tmp', filename))
-        handle_file(filename)
+    uploaded_file = request.files['file']
+    if uploaded_file is not None:
+        filename = secure_filename(uploaded_file.filename)
+        uploaded_file.save(os.path.join('tmp', filename))
+
+        _file = File(name=filename, size=request.bytes, modified_at=request.lastModifiedDate, user=g.current_user)
+        db.session.add(_file)
+        db.session.commit()
+
+        handle_file(_file)
 
 
 NUM_PARTS = 2
 
-def handle_file(filename):
+def handle_file(_file):
     """Split the file and upload its parts"""
-    if filename is not None:
-        pbs.sh('lxsplit-0.2.4/splitfile.sh', 'tmp/' + filename, NUM_PARTS)
+    if _file is not None:
+        pbs.sh('lxsplit-0.2.4/splitfile.sh', 'tmp/' + _file.name, NUM_PARTS)
     for i in [0..NUM_PARTS]:
-        part_filename = "%s%02d" % (filename, i)
+        part_filename = "%s%02d" % (_file.name, i)
+        chunk = Chunk(file=_file, parity=False, name=part_filename)
+        db.session.add(chunk)
+        db.session.commit()
+        put_dropbox(chunk)
 
 
-def put_dropbox(filename):
+def put_dropbox(chunk):
     """Put a file in the dropbox folder. User must be logged in."""
-    app_key = app.config['DROPBOX_OAUTH_CONSUMER_KEY']
-    app_secret = app.config['DROPBOX_OAUTH_CONSUMER_SECRET']
-    sess = dropbox.session.DropboxSession(app_key, app_secret, 'app_folder')
-    sess.set_token(g.current_user.dropbox_id, g.current_user.dropbox_token)
-    client = dropbox.client.DropboxClient(sess)
-    f = open(filename)
-    client.put_file(filename, f)
+    client = get_dropbox_client()
+    if client:
+        f = open(chunk.name)
+        client.put_file(chunk.name, f)
+        chunk.service = 'dropbox'
+        db.session.commit()
+
+
+def get_dropbox(chunk):
+    """Get a file from the dropbox folder. User must be logged in."""
+    client = get_dropbox_client()
+    if client:
+        out = open('tmp/' + chunk.name, 'w')
+        response = client.get_file(chunk.name)
+        out.write(response.read())
 
 
 @app.route('/foo')
