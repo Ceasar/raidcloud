@@ -397,7 +397,7 @@ def get_dropbox(chunk):
 
 def put_drive(chunk):
     # drive_token = g.current_user.drive_token
-    drive_token = 'ya29.AHES6ZROMHvNXdvFM_ewL50LghsZ0RNBykThcoBqpSP55sV8'
+    drive_token = g.current_user.drive_token
     url = "https://www.googleapis.com/upload/drive/v2/files?uploadType=media"
     data = open('tmp/' + chunk.name).read()
     headers = {
