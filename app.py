@@ -1,6 +1,4 @@
 import os
-import random
-import uuid
 
 from flask import Flask, request, session, g, redirect, url_for, \
              render_template, flash
@@ -19,6 +17,8 @@ except KeyError:
 
 app.config['GOOGLE_OAUTH_CONSUMER_KEY'] = '575198791092.apps.googleusercontent.com'
 app.config['GOOGLE_OAUTH_CONSUMER_SECRET'] = 'ei7THdOn1OyYCgYL_51ntTqK'
+app.config['DROPBOX_OAUTH_CONSUMER_KEY'] = ''
+app.config['DROPBOX_OAUTH_CONSUMER_SECRET'] = ''
 app.secret_key = 'ei7THdOn1OyYCgYL_51ntTqK'
 db = SQLAlchemy(app)
 
@@ -40,6 +40,22 @@ google = oauth.remote_app('google',
     consumer_secret=app.config['GOOGLE_OAUTH_CONSUMER_SECRET']
 )
 
+dropbox = oauth.remote_app('dropbox',
+    base_url='https://api.dropbox.com/1',
+    authorize_url='https://dropbox.com/1/oauth/authorize',
+    request_token_url='https://api.dropbox.com/1/oauth/request_token',
+    access_token_url='https://api.dropbox.com/1/oauth/access_token',
+    access_token_method='GET',
+    consumer_key=app.config['DROPBOX_OAUTH_CONSUMER_KEY'],
+    consumer_secret=app.config['DROPBOX_OAUTH_CONSUMER_SECRET']
+)
+
+
+@dropbox.tokengetter
+def get_dropbox_token():
+    """Get the google OAuth token in form (token, secret).
+    If no token exists, return None instead."""
+    return session.get('dropbox_token')
 
 @google.tokengetter
 def get_google_token():
@@ -80,14 +96,6 @@ def get_user_id(username):
 ###
 
 
-def random_bytes(size):
-    return bytes(random.randrange(0, 256) for i in range(size))
-
-
-def _make_auth_token():
-    return str(uuid.UUID(bytes=random_bytes(16)))
-
-
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True, nullable=False)
 
@@ -98,8 +106,6 @@ class User(db.Model):
     dropbox_token = db.Column(db.String(255), nullable=True)
 
     files = db.relation('File', backref='user')
-
-    auth_token = db.Column(db.String(36), unique=True, nullable=False, default=_make_auth_token, index=True)
 
 
 class File(db.Model):
