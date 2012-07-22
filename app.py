@@ -411,6 +411,18 @@ def get_dropbox(chunk):
         out.write(response.read())
 
 
+def get_drive(chunk):
+    drive_token = g.current_user.drive_token
+    url = "https://www.googleapis.com/upload/drive/v2/files?uploadType=media"
+    headers = {
+        'Authorization': 'OAuth ' + drive_token
+    }
+    data = None
+    resp = requests.get(url, data=data, headers=headers)
+    downloadURL = resp.json['downloadUrl']
+    return requests.get(downloadURL, data=data, headers=headers)
+
+
 def put_drive(chunk):
     # drive_token = g.current_user.drive_token
     drive_token = g.current_user.drive_token
