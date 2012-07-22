@@ -71,7 +71,7 @@ def get_google_token():
 @app.route('/dropbox')
 def dropbox_login():
     """Sign in with Dropbox."""
-    next_url = request.args.get('next') or request.referrer or None
+    next_url = request.args.get('next') or request.referrer
     callback_url = url_for('dropbox_oauth_authorized', next=next_url,
                            _external=True)
     return dropbox.authorize(callback=callback_url)
@@ -80,7 +80,7 @@ def dropbox_login():
 @app.route('/google')
 def google_login():
     """Sign in with Google."""
-    next_url = request.args.get('next') or request.referrer or None
+    next_url = request.args.get('next') or request.referrer
     callback_url = url_for('google_oauth_authorized', next=next_url,
                            _external=True)
     return google.authorize(callback=callback_url)
