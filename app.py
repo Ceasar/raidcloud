@@ -268,7 +268,7 @@ class File(db.Model):
     name = db.Column(db.String(255), nullable=False)
     size = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    chunks = db.relation('Chunk', backref='file')
+    chunks = db.relation('Chunk', cascade='all, delete-orphan', backref='file')
     modified_at = db.Column(db.DateTime(), nullable=False, default=datetime.datetime.now(tz=pytz.timezone('UTC')))
 
 
