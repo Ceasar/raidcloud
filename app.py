@@ -73,7 +73,7 @@ def dropbox_login():
     request_token = sess.obtain_request_token()
     session['dropbox_key'] = request_token
 
-    next_url = request.args.get('next') or request.referrer
+    next_url = None
     callback = url_for('dropbox_oauth_authorized', next=next_url,
                            _external=True)
     url = sess.build_authorize_url(request_token, oauth_callback=callback)
@@ -83,7 +83,7 @@ def dropbox_login():
 @app.route('/google')
 def google_login():
     """Sign in with Google."""
-    next_url = request.args.get('next') or request.referrer
+    next_url = None
     callback_url = url_for('google_oauth_authorized', next=next_url,
                            _external=True)
     return google.authorize(callback=callback_url)
@@ -122,13 +122,14 @@ def dropbox_oauth_authorized():
         if user.dropbox_token != dropbox_token:
             user.dropbox_token = dropbox_token
             user.dropbox_id = dropbox_id
-            user.dropbox_quota = quota
-            user.dropbox_total = total
             user.name = name
     else:
         # Create user
         user = User(dropbox_id=dropbox_id, dropbox_token=dropbox_token, name=name)
         db.session.add(user)
+    if not user.dropbox_quota:
+        user.dropbox_quota = quota
+        user.dropbox_total = total
 
     db.session.commit()
     session['user_id'] = user.id
@@ -175,12 +176,12 @@ def google_oauth_authorized(resp):
                 user.drive_token = drive_token
                 user.drive_id = drive_id
                 user.name = name
-                user.drive_total = 5368709
-                user.drive_quota = 5368709120
         else:
             # Create user
             user = User(drive_id=drive_id, drive_token=drive_token, name=name)
             db.session.add(user)
+        user.drive_total = 5368709
+        user.drive_quota = 5368709120
 
         db.session.commit()
         session['user_id'] = user.id
@@ -299,9 +300,7 @@ def index():
 @login_required
 def upload(id):
     if request.method == 'GET':
-        files = db.session.execute('SELECT id from files where file.user_id == %d' % id).fetchall()
-        file_ids = [row[0] for row in files]
-        return jsonify(files=file_ids)
+        files = User.query.get(id).files
     else:
         """Upload a file"""
         print request
@@ -331,7 +330,25 @@ def get_file(user_id, file_id):
 @app.route('/users/<user_id>/files/<file_id>/download', methods=['GET'])
 @login_required
 def download_file(user_id, file_id):
-    pass
+    _file = File.query.get(file_id)
+    chunks = _file.chunks
+    for chunk in chunks:
+        if chunk.service is 'dropbox':
+            get_dropbox()
+        else:
+            get_drive()
+    data = []
+    for i in xrange(1, NUM_PARTS+1):
+        part_filename = "%s.%d" % (_file.name, i)
+        f = open('tmp/' + part_filename, 'rb')
+        data.append(f.read())
+        f.close()
+
+    f = open('tmp/' + _file.name, 'wb')
+    for datum in data:
+        f.write(data)
+
+    return Response(f.read(), mimetype='application/binary')
 
 NUM_PARTS = 2
 
@@ -396,7 +413,7 @@ def get_dropbox(chunk):
 
 def put_drive(chunk):
     # drive_token = g.current_user.drive_token
-    drive_token = 'ya29.AHES6ZROMHvNXdvFM_ewL50LghsZ0RNBykThcoBqpSP55sV8'
+    drive_token = g.current_user.drive_token
     url = "https://www.googleapis.com/upload/drive/v2/files?uploadType=media"
     data = open('tmp/' + chunk.name).read()
     headers = {
