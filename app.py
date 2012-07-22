@@ -4,6 +4,7 @@ from urllib2 import Request, urlopen, URLError
 import webbrowser
 import datetime
 import pytz
+import subprocess
 
 from functools import wraps
 
@@ -295,7 +296,7 @@ def upload(id):
         uploaded_file = request.files['file']
         if uploaded_file is not None:
             filename = secure_filename(uploaded_file.filename)
-            uploaded_file.save(os.path.join('tmp', filename))
+            uploaded_file.save(os.path.join('/tmp', filename))
 
             date = request.form.get('lastModifiedDate')
             date_parts = date.split(' ')
@@ -325,9 +326,16 @@ NUM_PARTS = 2
 def split_file(_file):
     """Split the file and upload its parts"""
     if _file is not None:
-        os.chdir('lxsplit-0.2.4')
-        os.popen('./splitfile.sh %s %d' % (_file.name, NUM_PARTS))
-        os.chdir('../')
+        os.chdir('/tmp')
+        size = os.path.getsize(_file.name)
+        chunk_size = (size + NUM_PARTS - 1) / NUM_PARTS
+        subprocess.call(['app/lxsplit-0.2.4/lxsplit', '-s', '/tmp/' + _file.name, str(chunk_size) + 'b'])
+        os.remove(_file.name)
+        os.chdir('/app')
+        #os.chdir('lxsplit-0.2.4')
+        #os.popen('./splitfile.sh %s %d' % (_file.name, NUM_PARTS))
+        #os.chdir('../')
+        print os.getcwd()
     for i in xrange(1, NUM_PARTS+1):
         part_filename = "%s.%03d" % (_file.name, i)
         chunk = Chunk(file=_file, parity=False, name=part_filename)
@@ -343,7 +351,7 @@ def put_dropbox(chunk):
     """Put a file in the dropbox folder. User must be logged in."""
     client = get_dropbox_client()
     if client:
-        f = open('tmp/' + chunk.name)
+        f = open('/tmp/' + chunk.name)
         client.put_file(chunk.name, f)
         chunk.service = 'dropbox'
         db.session.commit()
@@ -353,7 +361,7 @@ def get_dropbox(chunk):
     """Get a file from the dropbox folder. User must be logged in."""
     client = get_dropbox_client()
     if client:
-        out = open('tmp/' + chunk.name, 'w')
+        out = open('/tmp/' + chunk.name, 'w')
         response = client.get_file(chunk.name)
         out.write(response.read())
 
@@ -362,7 +370,7 @@ def put_drive(chunk):
     # drive_token = g.current_user.drive_token
     drive_token = 'ya29.AHES6ZROMHvNXdvFM_ewL50LghsZ0RNBykThcoBqpSP55sV8'
     url = "https://www.googleapis.com/upload/drive/v2/files?uploadType=media"
-    data = open('tmp/' + chunk.name).read()
+    data = open('/tmp/' + chunk.name).read()
     headers = {
         'Content-Type': '',
         'Authorization': 'OAuth ' + drive_token
