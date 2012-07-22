@@ -158,7 +158,7 @@ def google_oauth_authorized(resp):
 
 def get_current_user():
     """Convenience method to look up the current user's model"""
-    if session.user_id is not None:
+    if hasattr(session, 'user_id') and session.user_id is not None:
         return User.query.get(session.user_id)
     else:
         return None
