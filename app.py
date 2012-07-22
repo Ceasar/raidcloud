@@ -349,6 +349,7 @@ def login():
 
 
 @app.route('/logout')
+@login_required
 def logout():
     session.pop('user_id', None)
     flash('You were logged out')
@@ -361,11 +362,16 @@ def user():
     user = g.current_user
     return to_json(user)
 
-@login_required
+
 @app.route('/users')
 def show_users():
-   return jsonify(users=[row[0] for row in db.session.execute('SELECT id from "user"').fetchall()])
-
+    try:
+        users = db.session.execute('SELECT id from "user"').fetchall()
+        user_ids = [row[0] for row in users]
+        return jsonify(users=user_ids)
+    except:
+        db.session.rollback()
+        return jsonify({})
 
 @app.route('/users/<id>')
 def show_user(id):
@@ -373,11 +379,13 @@ def show_user(id):
 
 
 @app.route('/files')
+@login_required
 def show_files(id):
     return {}
 
 
 @app.route('/files/<id>')
+@login_required
 def show_file(id):
     return {}
 
