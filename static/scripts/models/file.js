@@ -8,7 +8,11 @@ define(function (require, exports) {
 
   exports.File = Backbone.Model.extend({
 
-    url: function () {
+    defaults: {
+      selected: false
+    }
+
+  , url: function () {
       var url = '/users/' + this.get('ownerId');
 
       if (!this.isNew()) url += this.get('id');

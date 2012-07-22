@@ -19,6 +19,7 @@
 
 <script type="text/x-underscore-template" id="tmpl-file">
 
+  <a href="#" class="delete">&times;</a>
   <img class="icon" src="static/images/file.png" />
   <div class="filename"><%= name %></div>
   <div class="modified"><%= lastModifiedDate %></div>
@@ -28,11 +29,12 @@
 
 <script type="text/x-underscore-template" id="tmpl-file-list">
 
-  <div class="no-files">
-    Drag files here to get started with Raidcloud
-  </div>
-  <div class="file-list">
+  <div id="delete-all"><a href="#">Delete selected</a></div>
 
+  <div class="no-files">
+    Drag files here to get started!
   </div>
+
+  <div class="file-list"></div>
 
 </script>

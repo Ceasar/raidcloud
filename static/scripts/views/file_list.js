@@ -13,10 +13,21 @@ define(function (require, exports) {
 
   , events: {
       'drop': 'onFileDrop'
+    , 'dragstart': 'onDragStart'
+    , 'dragend': 'onDragEnd'
+    , 'click #delete-all a': 'deleteSelected'
     }
 
   , collectionEvents: {
       'add': 'addFile'
+    , 'removeFile': 'renderFiles'
+    , 'change:selected': 'onSelect'
+    }
+
+  , initialize: function () {
+      this.state = {
+        deleting: false
+      };
     }
 
   , render: function () {
@@ -29,23 +40,27 @@ define(function (require, exports) {
       return this;
     }
 
-  , renderFiles: function () {
+  , renderFiles: function (force) {
       var $files = this.$('.file-list');
 
       $files.empty();
 
-      this.collection.each(function (file) {
-        var view = new FileView({
-              model: file
-            });
+      if (this.collection.isEmpty()) {
+        this.$('.no-files').fadeIn();
+      } else {
+        this.collection.each(function (file) {
+          var view = new FileView({
+                model: file
+              });
 
-        $files.append(view.render().$el);
-      });
+          $files.append(view.render().$el);
+        });
+      }
     }
 
   , addFile: function (file) {
-      var $files = this.$('.file-list')
-        , $noFiles = this.$('.no-files')
+      var $files    = this.$('.file-list')
+        , $noFiles  = this.$('.no-files')
         , view = new FileView({
             model: file
           });
@@ -53,6 +68,34 @@ define(function (require, exports) {
       if ($noFiles.is(':visible')) $noFiles.slideUp('fast');
 
       $files.append(view.render().$el);
+    }
+
+  , onSelect: function (e) {
+      var anySelected = _.any(this.collection.pluck('selected'))
+        , $del = this.$('#delete-all');
+
+      if (anySelected) {
+        $del.slideDown('fast');
+      } else {
+        $del.slideUp('fast');
+      }
+    }
+
+  , deleteSelected: function (e) {
+      // this.collection.each(function (file) {
+      //   if (file.get('selected')) file.destroy();
+      // });
+
+      var length = this.collection.length;
+
+      for (var i = 0; i < length; i++) {
+        var file = this.collection.at(i);
+        if (file && file.get('selected')) file.destroy();
+      }
+
+      this.renderFiles();
+
+      this.$('#delete-all').slideUp('fast');
     }
 
   , onFileDrop: function (e) {
@@ -63,6 +106,16 @@ define(function (require, exports) {
       if (!e.dataTransfer) e = e.originalEvent;
 
       this.collection.uploadFiles(e.dataTransfer);
+    }
+
+  , onDragStart: function (e) {
+      console.log(e);
+
+    }
+
+  , onDragEnd: function (e) {
+      console.log(e);
+
     }
 
   });

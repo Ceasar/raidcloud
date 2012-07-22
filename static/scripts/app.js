@@ -66,6 +66,10 @@ define(function (require, exports, module) {
       , el: $('#app')
       });
   finderView.render();
+  finderView.$el.parent().animate({
+    'margin-top': 0
+  , 'opacity': 1
+  }, 500).addClass('show');
 
   $finderLinks = $('#finder-sidebar a');
 

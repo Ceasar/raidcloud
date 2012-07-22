@@ -3869,6 +3869,9 @@ a.label:hover, a.badge:hover {
   -moz-box-sizing: border-box;
   box-sizing: border-box; }
 
+a {
+  text-decoration: none !important; }
+
 ul {
   list-style: none;
   margin: 0;
@@ -3878,6 +3881,10 @@ body {
   background: url("http://subtlepatterns.com/patterns/low_contrast_linen.png");
   padding-top: 40px; }
 
+.hidden {
+  display: none; }
+
+/* App */
 h1#center-title {
   font-size: 48px;
   line-height: 56px;
@@ -3889,7 +3896,15 @@ h1#center-title {
   width: 1200px;
   height: 768px;
   padding: 60px 121px 60px 119px;
-  margin-left: -120px; }
+  margin: 50px 0 0 -120px;
+  opacity: 0;
+  -webkit-transition: display 0.5s linear;
+  -moz-transition: display 0.5s linear;
+  -ms-transition: display 0.5s linear;
+  -o-transition: display 0.5s linear;
+  transition: display 0.5s linear; }
+  #finder.show {
+    margin-top: 0; }
 
 #finder-header {
   width: 100%;
@@ -3907,7 +3922,6 @@ h1#center-title {
       border-top: solid 1px transparent;
       border-bottom: solid 1px transparent; }
     #finder-sidebar ul a {
-      text-decoration: none;
       color: inherit;
       text-shadow: 0 1px 1px white;
       font-weight: bold; }
@@ -3940,6 +3954,29 @@ h1#center-title {
     background: #deebff; }
     #finder-main.active .no-files {
       border-color: #333; }
+  #finder-main #delete-all {
+    display: none;
+    float: left;
+    width: 100%;
+    padding: 10px;
+    border-bottom: solid 1px #BBB;
+    background-color: #e7e7e7;
+    background-image: -moz-linear-gradient(top, #eeeeee, #dddddd);
+    background-image: -ms-linear-gradient(top, #eeeeee, #dddddd);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#eeeeee), to(#dddddd));
+    background-image: -webkit-linear-gradient(top, #eeeeee, #dddddd);
+    background-image: -o-linear-gradient(top, #eeeeee, #dddddd);
+    background-image: linear-gradient(top, #eeeeee, #dddddd);
+    background-repeat: repeat-x;
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ebebeb', endColorstr='#dadada', GradientType=0); }
+    #finder-main #delete-all a {
+      margin-right: 10px;
+      float: right;
+      font-weight: bold;
+      color: #660000;
+      text-shadow: 0 1px 1px white; }
+      #finder-main #delete-all a:hover {
+        color: #000; }
   #finder-main .no-files {
     height: 85%;
     margin: 5%;
@@ -3951,11 +3988,6 @@ h1#center-title {
     -webkit-border-radius: 10px;
     -moz-border-radius: 10px;
     border-radius: 10px; }
-  #finder-main .file-list {
-    padding: 10px;
-    float: left;
-    width: 100%;
-    height: 100%; }
   #finder-main #header {
     padding: 10px;
     margin-bottom: 10px;
@@ -3989,18 +4021,24 @@ h1#center-title {
       -moz-border-radius: 3px;
       border-radius: 3px; }
 
+.file-list {
+  padding: 10px;
+  float: left;
+  width: 100%;
+  height: 100%; }
+
 .file {
   display: block;
   float: left;
   width: 180px;
   padding: 5px;
-  text-decoration: none;
+  margin: 0 5px 5px 0;
   cursor: pointer;
   color: inherit;
   border: solid 1px transparent;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  border-radius: 5px;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
   -webkit-transition: all 0.1s linear;
   -moz-transition: all 0.1s linear;
   -ms-transition: all 0.1s linear;
@@ -4012,6 +4050,8 @@ h1#center-title {
     background: #427fd1;
     color: white;
     border-color: #224f8b; }
+    .file:active .delete, .file.selected .delete {
+      color: white; }
   .file .icon {
     float: left; }
   .file .filename, .file .modified {
@@ -4021,4 +4061,13 @@ h1#center-title {
     white-space: nowrap;
     text-overflow: ellipsis; }
   .file .filename {
-    margin-top: 5px; }
+    margin-top: -8px; }
+  .file .delete {
+    position: relative;
+    float: right;
+    margin-top: -3px;
+    color: #999;
+    font-size: 16px;
+    font-weight: bold; }
+    .file .delete:hover {
+      color: #333; }
