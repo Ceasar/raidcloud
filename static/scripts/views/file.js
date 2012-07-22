@@ -17,6 +17,7 @@ define(function (require, exports) {
   , events: {
       'click': 'select'
     , 'click .delete': 'delete'
+    , 'dblclick': 'goToFile'
     }
 
   , render: function () {
@@ -44,6 +45,12 @@ define(function (require, exports) {
 
       this.model.destroy();
       collection.trigger('removeFile');
+    }
+
+  , goToFile: function (e) {
+      e.stopPropagation();
+      e.preventDefault();
+      window.location = this.model.url() + '/download';
     }
 
   });

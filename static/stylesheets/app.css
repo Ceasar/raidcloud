@@ -4052,7 +4052,9 @@ h1#center-title {
         filter: alpha(opacity=80); }
       #finder-main ul#providers li p {
         float: left;
-        margin: 16px 10px; }
+        margin: 16px 10px;
+        width: 168px;
+        line-height: 25px; }
     #finder-main ul#providers a:hover li {
       background: #BBB;
       color: #444; }
