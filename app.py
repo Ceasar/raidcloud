@@ -48,7 +48,7 @@ dropbox = oauth.remote_app('dropbox',
     authorize_url='https://dropbox.com/1/oauth/authorize',
     request_token_url='https://api.dropbox.com/1/oauth/request_token',
     access_token_url='https://api.access.com/1/oauth/access_token',
-    access_token_method='GET',
+    access_token_method='POST',
     consumer_key=app.config['DROPBOX_OAUTH_CONSUMER_KEY'],
     consumer_secret=app.config['DROPBOX_OAUTH_CONSUMER_SECRET']
 )
