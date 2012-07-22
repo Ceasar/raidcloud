@@ -6,7 +6,7 @@
 
 
 # grab the size of the inputted file
-sizetext=$(ls -l "$1")
+sizetext=$(ls -l ../tmp/"$1")
 size=$( echo $sizetext | awk '{ print $5}')
 #echo "File $1 is $size bytes"
 numparts=$2
@@ -19,10 +19,10 @@ chunksizehuman=$(echo "$chunksize" | bc)
 
 #echo "Splitting file $1 into $2 parts of size $chunksizehuman bytes each"
 
-./lxsplit -s "$1" "$chunksize"b > /dev/null
+./lxsplit -s ../tmp/"$1" "$chunksize"b > /dev/null
 
 # delete the original file
-rm "$1"
+rm ../tmp/"$1"
 
 # find out which part file is the last one, so we can calculate how much we need to pad
 files=$(ls -1 | grep "$1")

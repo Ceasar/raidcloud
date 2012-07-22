@@ -326,9 +326,10 @@ def split_file(_file):
     """Split the file and upload its parts"""
     if _file is not None:
         os.chdir('lxsplit-0.2.4')
-        print str(pbs.sh('splitfile.sh', _file.name, NUM_PARTS))
-    for i in xrange(NUM_PARTS):
-        part_filename = "%s%02d" % (_file.name, i)
+        os.popen('./splitfile.sh %s %d' % (_file.name, NUM_PARTS))
+        os.chdir('../')
+    for i in xrange(1, NUM_PARTS+1):
+        part_filename = "%s.%03d" % (_file.name, i)
         chunk = Chunk(file=_file, parity=False, name=part_filename)
         db.session.add(chunk)
         db.session.commit()
