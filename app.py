@@ -77,12 +77,19 @@ def google_login():
 def google_oauth_authorized(resp):
     """Store the oauth_token and secret and redirect."""
     if resp is not None:
-        session['google_token'] = (
-            resp['oauth_token'],
-            resp['oauth_token_secret']
-        )
-        # TODO: Check to make sure this is right
-        session['google_user'] = resp['screen_name']
+        drive_id = resp['id_token']
+        access_token = resp['access_token']
+        session['google_token'] = (drive_id, access_token)
+        user = User.query.filter_by(drive_id=drive_id).first()
+        if user:
+            # Update the access_token if needed
+            if user.drive_token != access_token:
+                user.drive_token = access_token
+                user.save()
+        else:
+            # Create a new user
+            user = User(drive_id=drive_id, access_token=access_token)
+            user.save()
     return redirect(request.args.get('next') or url_for('index'))
 
 
@@ -129,8 +136,9 @@ class Chunk(db.Model):
 @app.before_request
 def before_request():
     g.user = None
-    if 'user_id' in session:
-        g.user = User.query.filter_by(user_id=session['user_id']).first()
+    if 'google_token' in session:
+        drive_id, access_token = session['google_token']
+        g.user = User.query.filter_by(user_id=drive_id).first()
 
 
 @app.route('/')
