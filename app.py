@@ -177,7 +177,7 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if get_current_user() is None:
-            return redirect(url_for('login'), next=request.url)
+            return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -302,7 +302,7 @@ def login():
             flash('You were logged in')
             return redirect(url_for('index'))
     else:
-        if g.user:
+        if g.current_user:
             return redirect(url_for('index'))
         else:
             return render_template('login.html')
@@ -315,10 +315,10 @@ def logout():
     return redirect(url_for('index'))
 
 
-@login_required
 @app.route('/user')
+@login_required
 def user():
-    user = get_current_user()
+    user = g.current_user
     return to_json(user)
 
 @login_required
