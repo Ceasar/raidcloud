@@ -1,15 +1,96 @@
 import os
 
-from flask.ext.sqlalchemy import SQLAlchemy
 from flask import Flask, request, session, g, redirect, url_for, \
              render_template, flash
+from oauth import OAuth
+from flask.ext.sqlalchemy import SQLAlchemy
+
 from auth import authenticate
-# TODO: Make models file
 
 app = Flask(__name__)
 app.config.from_object(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://raid:cloud@localhost/raidcloud'
+
+try:
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+except KeyError:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://raid:cloud@localhost/raidcloud'
+
+app.config['GOOGLE_OAUTH_CONSUMER_KEY'] = '575198791092.apps.googleusercontent.com'
+app.config['GOOGLE_OAUTH_CONSUMER_SECRET'] = 'ei7THdOn1OyYCgYL_51ntTqK'
+app.config['DROPBOX_OAUTH_CONSUMER_KEY'] = ''
+app.config['DROPBOX_OAUTH_CONSUMER_SECRET'] = ''
+app.secret_key = 'ei7THdOn1OyYCgYL_51ntTqK'
 db = SQLAlchemy(app)
+
+oauth = OAuth()
+google = oauth.remote_app('google',
+    base_url='https://www.google.com/accounts/',
+    authorize_url='https://accounts.google.com/o/oauth2/auth',
+    request_token_url=None,
+    request_token_params={
+        'scope': 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/drive.file',
+        'response_type': 'code'
+        },
+    access_token_url='https://accounts.google.com/o/oauth2/token',
+    access_token_method='POST',
+    access_token_params={
+        'grant_type': 'authorization_code'
+        },
+    consumer_key=app.config['GOOGLE_OAUTH_CONSUMER_KEY'],
+    consumer_secret=app.config['GOOGLE_OAUTH_CONSUMER_SECRET']
+)
+
+dropbox = oauth.remote_app('dropbox',
+    base_url='https://api.dropbox.com/1',
+    authorize_url='https://dropbox.com/1/oauth/authorize',
+    request_token_url='https://api.dropbox.com/1/oauth/request_token',
+    access_token_url='https://api.dropbox.com/1/oauth/access_token',
+    access_token_method='GET',
+    consumer_key=app.config['DROPBOX_OAUTH_CONSUMER_KEY'],
+    consumer_secret=app.config['DROPBOX_OAUTH_CONSUMER_SECRET']
+)
+
+
+@dropbox.tokengetter
+def get_dropbox_token():
+    """Get the google OAuth token in form (token, secret).
+    If no token exists, return None instead."""
+    return session.get('dropbox_token')
+
+@google.tokengetter
+def get_google_token():
+    """Get the google OAuth token in form (token, secret).
+    If no token exists, return None instead."""
+    return session.get('google_token')
+
+
+@app.route('/google')
+def google_login():
+    """Sign in with Google."""
+    next_url = request.args.get('next') or request.referrer or None
+    callback_url = url_for('google_oauth_authorized', next=next_url, _external=True)
+    return google.authorize(callback=callback_url)
+
+
+@app.route('/google_oauth_authorized')
+@google.authorized_handler
+def google_oauth_authorized(resp):
+    """Store the oauth_token and secret and redirect."""
+    if resp is not None:
+        drive_id = resp['id_token']
+        access_token = resp['access_token']
+        session['google_token'] = (drive_id, access_token)
+        user = User.query.filter_by(drive_id=drive_id).first()
+        if user:
+            # Update the access_token if needed
+            if user.drive_token != access_token:
+                user.drive_token = access_token
+                user.save()
+        else:
+            # Create a new user
+            user = User(drive_id=drive_id, access_token=access_token)
+            user.save()
+    return redirect(request.args.get('next') or url_for('index'))
 
 
 def get_user_id(username):
@@ -25,10 +106,10 @@ def get_user_id(username):
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True, nullable=False)
 
-    drive_id = db.Column(db.BigInteger, nullable=True)
+    drive_id = db.Column(db.String(255), nullable=True)
     drive_token = db.Column(db.String(255), nullable=True)
 
-    dropbox_id = db.Column(db.BigInteger, nullable=True)
+    dropbox_id = db.Column(db.String(255), nullable=True)
     dropbox_token = db.Column(db.String(255), nullable=True)
 
     files = db.relation('File', backref='user')
@@ -45,6 +126,7 @@ class File(db.Model):
 class Chunk(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     file_id = db.Column(db.Integer, db.ForeignKey('file.id'), nullable=False)
+    parity = db.Column(db.Boolean, nullable=False, default=False)
 
 ###
 # Routes
@@ -54,8 +136,9 @@ class Chunk(db.Model):
 @app.before_request
 def before_request():
     g.user = None
-    if 'user_id' in session:
-        g.user = User.query.filter_by(user_id=session['user_id']).first()
+    if 'google_token' in session:
+        drive_id, access_token = session['google_token']
+        g.user = User.query.filter_by(user_id=drive_id).first()
 
 
 @app.route('/')
