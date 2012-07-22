@@ -10,6 +10,7 @@ define(function (require, exports) {
 
     defaults: {
       selected: false
+    , uploaded: false
     }
 
   , url: function () {
@@ -22,6 +23,43 @@ define(function (require, exports) {
 
   , initialize: function () {
       console.log('init file model');
+    }
+
+  , upload: function () {
+      var file = this.get('raw')
+        , that = this;
+
+      var xhr = new XMLHttpRequest()
+        , data = new FormData();
+      data.append('file', file);
+      data.append('name', this.get('name'));
+      // _.each(this.attributes, function (value, attr) {
+      //   console.log(attr);
+      //   console.log(value);
+      //   data.append(attr, value);
+      // });
+      console.log(data);
+
+      xhr.file = file;
+      xhr.upload.onprogress = function (e) {
+        that.onProgress(e, that);
+      }
+      xhr.onreadystatechange = function (e) {
+        that.onStateChange(e, that);
+      };
+      xhr.open('post', this.url(), true);
+      xhr.send(data);
+    }
+
+    // Ajax file upload progress event
+  , onProgress: function (e, context) {
+      console.log(e);
+    }
+
+  , onStateChange: function (e, context) {
+      console.log(e);
+
+      context.set('uploaded', true);
     }
 
   });

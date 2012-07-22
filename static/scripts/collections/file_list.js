@@ -19,16 +19,16 @@ define(function (require, exports) {
       var files = data.files
         , that  = this;
 
-      console.log(files);
-
       _.each(files, function (file) {
-        var fileModel = new File(_.extend(file, {
+        var fileModel = new File({
               ownerId: that.options.ownerId
-            }));
+            , raw: file
+            , name: file.name
+            });
 
-        console.log(fileModel.toJSON());
-        console.log(fileModel.url());
-        fileModel.save();
+        // console.log(fileModel.toJSON());
+        // console.log(fileModel.url());
+        fileModel.upload();
         that.add(fileModel);
       });
     }
