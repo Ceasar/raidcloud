@@ -15,6 +15,7 @@ oauth2==1.5.211
 pbs==0.108
 psycopg2==2.4.5
 python-dateutil==2.1
+pytz==2012c
 simplejson==2.6.0
 six==1.1.0
 wsgiref==0.1.2

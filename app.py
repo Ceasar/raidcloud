@@ -2,6 +2,8 @@ import os
 from json_lib import jsonify, loads
 from urllib2 import Request, urlopen, URLError
 import webbrowser
+import datetime
+import pytz
 
 from functools import wraps
 
@@ -85,6 +87,14 @@ def google_login():
     return google.authorize(callback=callback_url)
 
 
+def get_dropbox_client():
+    if user.has_dropbox:
+        sess = dropbox.session.DropboxSession(app.config['DROPBOX_OAUTH_CONSUMER_KEY'], app.config ['DROPBOX_OAUTH_CONSUMER_SECRET'], 'app_folder')
+        sess.set_token(g.current_user.dropbox_id, g.current_user.dropbox_token)
+        return dropbox.client.DropboxClient(sess)
+    else:
+        return None
+
 @app.route('/dropbox_oauth_authorized')
 def dropbox_oauth_authorized():
     """Store the oauth_token and secret and redirect."""
@@ -98,16 +108,20 @@ def dropbox_oauth_authorized():
     access_token = sess.obtain_access_token(request_token)
     dropbox_id, dropbox_token = access_token.key, access_token.secret
 
+    name = dropbox.client.DropboxClient(sess).account_info()['display_name']
+
     user = g.current_user or User.query.filter_by(dropbox_id=dropbox_id).first()
     if user:
         # Add/Update user dropbox creds
         if user.dropbox_token != dropbox_token:
             user.dropbox_token = dropbox_token
             user.dropbox_id = dropbox_id
+            user.name = name
     else:
         # Create user
-        user = User(dropbox_id=dropbox_id, dropbox_token=dropbox_token)
+        user = User(dropbox_id=dropbox_id, dropbox_token=dropbox_token, name=name)
         db.session.add(user)
+
     db.session.commit()
     session['user_id'] = user.id
 
@@ -127,7 +141,7 @@ def google_oauth_authorized(resp):
         drive_id = None
         drive_token = resp['access_token']
 
-        headers = {'Authorization': 'OAuth ' + drive_token}
+        headers = {' Authorization': 'OAuth ' + drive_token}
         req = Request('https://www.googleapis.com/oauth2/v1/userinfo',
                       None, headers)
         res = json.loads(urlopen(req).read())
@@ -144,6 +158,7 @@ def google_oauth_authorized(resp):
         }
         """
         drive_id = res['id']
+        name = res['name']
 
         user = g.current_user or User.query.filter_by(drive_id=drive_id).first()
         if user:
@@ -151,10 +166,12 @@ def google_oauth_authorized(resp):
             if user.drive_token != drive_token:
                 user.drive_token = drive_token
                 user.drive_id = drive_id
+                user.name = name
         else:
             # Create user
-            user = User(drive_id=drive_id, drive_token=drive_token)
+            user = User(drive_id=drive_id, drive_token=drive_token, name=name)
             db.session.add(user)
+
         db.session.commit()
         session['user_id'] = user.id
 
@@ -191,7 +208,6 @@ def to_json(obj):
 
             fields = dict()
             for field in [x for x in dir(model) if not x.startswith('_') and x not in ['metadata', 'query', 'query_class']]:
-                print field
                 v = model.__getattribute__(field)
                 if isinstance(v, list) and len(v) > 0 and isinstance(v[0].__class__, DeclarativeMeta):
                     child_list = []
@@ -212,6 +228,8 @@ def to_json(obj):
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True, nullable=False)
 
+    name = db.Column(db.String(32), nullable=False, default='')
+
     drive_id = db.Column(db.String(255), nullable=True)
     drive_token = db.Column(db.String(255), nullable=True)
 
@@ -227,12 +245,14 @@ class File(db.Model):
     size = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     chunks = db.relation('Chunk', backref='file')
+    modified_at = db.Column(db.DateTime(), nullable=False, default=datetime.datetime.now(tz=pytz.timezone('UTC')))
 
 
 class Chunk(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     file_id = db.Column(db.Integer, db.ForeignKey('file.id'), nullable=False)
     parity = db.Column(db.Boolean, nullable=False, default=False)
+    service = db.Column(db.String(32), nullable=False)
 
 ###
 # Routes
