@@ -1,4 +1,5 @@
 import os
+from urllib2 import Request, urlopen, URLError
 
 from flask import Flask, request, session, g, redirect, url_for, \
              render_template, flash
@@ -28,7 +29,7 @@ google = oauth.remote_app('google',
     authorize_url='https://accounts.google.com/o/oauth2/auth',
     request_token_url=None,
     request_token_params={
-        'scope': 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/drive.file',
+        'scope': 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/drive.file',
         'response_type': 'code'
         },
     access_token_url='https://accounts.google.com/o/oauth2/token',
@@ -83,10 +84,16 @@ def google_login():
 def google_oauth_authorized(resp):
     """Store the oauth_token and secret and redirect."""
     if resp is not None:
-        drive_id = resp['id_token']
+        drive_id = None
         drive_token = resp['access_token']
+
+        headers = {'Authorization': 'OAuth '+access_token}
+        req = Request('https://www.googleapis.com/oauth2/v1/userinfo',
+                      None, headers)
+        res = urlopen(req)
+
         session['google_token'] = (drive_id, drive_token)
-        user = User.query.filter_by(drive_id=drive_id).first()
+        user = User.query.all().first()
         if user:
             # Update the drive_token if needed
             if user.drive_token != drive_token:
