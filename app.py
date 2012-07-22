@@ -2,10 +2,9 @@ import os
 import random
 import uuid
 
-from flask.ext.sqlalchemy import SQLAlchemy
 from flask import Flask, request, session, g, redirect, url_for, \
              render_template, flash
-from flask.ext.oauth import OAuth
+from oauth import OAuth
 from flask.ext.sqlalchemy import SQLAlchemy
 
 from auth import authenticate
@@ -18,8 +17,9 @@ try:
 except KeyError:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://raid:cloud@localhost/raidcloud'
 
-app.config['GOOGLE_OAUTH_CONSUMER_SECRET'] = 'ei7THdOn1OyYCgYL_51ntTqK'
 app.config['GOOGLE_OAUTH_CONSUMER_KEY'] = 'AIzaSyAwJ0XdL2X6jU9S-2vOzfXsE3yfnx6361Q'
+app.config['GOOGLE_OAUTH_CONSUMER_SECRET'] = 'ei7THdOn1OyYCgYL_51ntTqK'
+app.secret_key = 'ei7THdOn1OyYCgYL_51ntTqK'
 db = SQLAlchemy(app)
 
 oauth = OAuth()
@@ -51,9 +51,9 @@ def get_google_token():
 @app.route('/google')
 def google_login():
     """Sign in with Google."""
+    callback_url = url_for('google_oauth_authorized')
     next_url = request.args.get('next') or request.referrer or None
-    return google.authorize(callback=url_for('google_oauth_authorized',
-        next=next_url))
+    return google.authorize(callback=callback_url, next=next_url)
 
 
 @app.route('/google_oauth_authorized')
