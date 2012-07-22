@@ -301,7 +301,7 @@ def index():
 @login_required
 def upload(id):
     if request.method == 'GET':
-        files = User.query.get(id).files
+        return to_json(User.query.get(id).files)
     else:
         """Upload a file"""
         uploaded_file = request.files['file']
@@ -318,13 +318,19 @@ def upload(id):
             db.session.commit()
 
             split_file(_file)
-            return jsonify({'success': True})
-        return jsonify({'success': False})
+            return to_json(_file)
+        return jsonify({})
 
-@app.route('/users/<user_id>/files/<file_id>', methods=['GET'])
+
+@app.route('/users/<user_id>/files/<file_id>', methods=['DELETE','GET'])
 @login_required
 def get_file(user_id, file_id):
-    return to_json(File.query.get(file_id))
+    if request.method == 'GET':
+        return to_json(File.query.get(file_id))
+    else:
+        db.session.delete(File.query.get(file_id))
+        db.session.commit()
+        return jsonify({'success': True})
 
 
 @app.route('/users/<user_id>/files/<file_id>/download', methods=['GET'])
