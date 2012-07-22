@@ -333,7 +333,7 @@ def download_file(user_id, file_id):
     _file = File.query.get(file_id)
     chunks = _file.chunks
     for chunk in chunks:
-        if chunk.service is 'dropbox':
+        if chunk.service == 'dropbox':
             get_dropbox(chunk)
         else:
             get_drive(chunk)
