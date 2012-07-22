@@ -89,7 +89,7 @@ def google_login():
 
 
 def get_dropbox_client():
-    if user.has_dropbox:
+    if g.current_user.has_dropbox:
         sess = dropbox.session.DropboxSession(app.config['DROPBOX_OAUTH_CONSUMER_KEY'], app.config ['DROPBOX_OAUTH_CONSUMER_SECRET'], 'app_folder')
         sess.set_token(g.current_user.dropbox_id, g.current_user.dropbox_token)
         return dropbox.client.DropboxClient(sess)
@@ -262,7 +262,7 @@ class Chunk(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     file_id = db.Column(db.Integer, db.ForeignKey('file.id'), nullable=False)
     parity = db.Column(db.Boolean, nullable=False, default=False)
-    service = db.Column(db.String(32), nullable=False)
+    service = db.Column(db.String(32), nullable=True)
     name = db.Column(db.String(255), nullable=False)
 
 
@@ -297,7 +297,11 @@ def upload(id):
             filename = secure_filename(uploaded_file.filename)
             uploaded_file.save(os.path.join('tmp', filename))
 
-            _file = File(name=filename, size=request.bytes, modified_at=request.lastModifiedDate, user=g.current_user)
+            date = request.form.get('lastModifiedDate')
+            date_parts = date.split(' ')
+            parsed_date = ' '.join(date_parts[0:-2])
+
+            _file = File(name=filename, size=request.form.get('bytes'), modified_at=parsed_date, user=g.current_user)
             db.session.add(_file)
             db.session.commit()
 
@@ -321,8 +325,9 @@ NUM_PARTS = 2
 def split_file(_file):
     """Split the file and upload its parts"""
     if _file is not None:
-        pbs.sh('lxsplit-0.2.4/splitfile.sh', 'tmp/' + _file.name, NUM_PARTS)
-    for i in [0..NUM_PARTS]:
+        os.chdir('lxsplit-0.2.4')
+        print str(pbs.sh('splitfile.sh', _file.name, NUM_PARTS))
+    for i in xrange(NUM_PARTS):
         part_filename = "%s%02d" % (_file.name, i)
         chunk = Chunk(file=_file, parity=False, name=part_filename)
         db.session.add(chunk)
@@ -337,7 +342,7 @@ def put_dropbox(chunk):
     """Put a file in the dropbox folder. User must be logged in."""
     client = get_dropbox_client()
     if client:
-        f = open(chunk.name)
+        f = open('tmp/' + chunk.name)
         client.put_file(chunk.name, f)
         chunk.service = 'dropbox'
         db.session.commit()
@@ -356,7 +361,7 @@ def put_drive(chunk):
     # drive_token = g.current_user.drive_token
     drive_token = 'ya29.AHES6ZROMHvNXdvFM_ewL50LghsZ0RNBykThcoBqpSP55sV8'
     url = "https://www.googleapis.com/upload/drive/v2/files?uploadType=media"
-    data = open('dev/' + chunk.name).read()
+    data = open('tmp/' + chunk.name).read()
     headers = {
         'Content-Type': '',
         'Authorization': 'OAuth ' + drive_token
