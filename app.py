@@ -278,6 +278,7 @@ class Chunk(db.Model):
     parity = db.Column(db.Boolean, nullable=False, default=False)
     service = db.Column(db.String(32), nullable=True)
     name = db.Column(db.String(255), nullable=False)
+    drive_id = db.Column(db.Integer, nullable=True)
 
 
 ###
@@ -324,7 +325,7 @@ def upload(id):
 @app.route('/users/<user_id>/files/<file_id>', methods=['GET'])
 @login_required
 def get_file(user_id, file_id):
-    return to_json(File.query.get(file_id))
+    return to_json(File.query.get(file_id).first())
 
 
 @app.route('/users/<user_id>/files/<file_id>/download', methods=['GET'])
@@ -334,9 +335,9 @@ def download_file(user_id, file_id):
     chunks = _file.chunks
     for chunk in chunks:
         if chunk.service is 'dropbox':
-            get_dropbox()
+            get_dropbox(chunk)
         else:
-            get_drive()
+            get_drive(chunk)
     data = []
     for i in xrange(1, NUM_PARTS+1):
         part_filename = "%s.%d" % (_file.name, i)
@@ -413,14 +414,16 @@ def get_dropbox(chunk):
 
 def get_drive(chunk):
     drive_token = g.current_user.drive_token
-    url = "https://www.googleapis.com/upload/drive/v2/files?uploadType=media"
+    url = "https://www.googleapis.com/upload/drive/v2/files/" + chunk.drive_id
     headers = {
         'Authorization': 'OAuth ' + drive_token
     }
     data = None
     resp = requests.get(url, data=data, headers=headers)
     downloadURL = resp.json['downloadUrl']
-    return requests.get(downloadURL, data=data, headers=headers)
+    response = requests.get(downloadURL, data=data, headers=headers)
+    out = open('tmp/' + chunk.name, 'w')
+    out.write(response.read())
 
 
 def put_drive(chunk):
@@ -434,8 +437,8 @@ def put_drive(chunk):
     }
     chunk.service = 'drive'
     db.session.commit()
-    requests.post(url, data=data, headers=headers).text
-
+    response = requests.post(url, data=data, headers=headers).text
+    chunk.drive_id = response.json['id']
 
 @app.route('/foo')
 def foo():
