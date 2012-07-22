@@ -423,7 +423,7 @@ def get_drive(chunk):
     downloadURL = resp.json['downloadUrl']
     response = requests.get(downloadURL, data=data, headers=headers)
     out = open('tmp/' + chunk.name, 'w')
-    out.write(response.read())
+    out.write(response.text)
 
 
 def put_drive(chunk):
