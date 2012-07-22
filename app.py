@@ -25,14 +25,19 @@ db = SQLAlchemy(app)
 oauth = OAuth()
 google = oauth.remote_app('google',
     base_url='https://www.google.com/accounts/',
-    request_token_url='https://www.google.com/accounts/OAuthGetRequestToken',
-    access_token_url='https://www.google.com/accounts/OAuthGetAccessToken',
-    authorize_url='https://www.google.com/accounts/OAuthAuthorizeToken',
-    consumer_key=app.config['GOOGLE_OAUTH_CONSUMER_KEY'],
-    consumer_secret=app.config['GOOGLE_OAUTH_CONSUMER_SECRET'],
+    authorize_url='https://accounts.google.com/o/oauth2/auth',
+    request_token_url=None,
     request_token_params={
-        'scope': 'https://www.googleapis.com/auth/drive.file'
-    },
+        'scope': 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/drive.file',
+        'response_type': 'code'
+        },
+    access_token_url='https://accounts.google.com/o/oauth2/token',
+    access_token_method='POST',
+    access_token_params={
+        'grant_type': 'authorization_code'
+        },
+    consumer_key=app.config['GOOGLE_OAUTH_CONSUMER_KEY'],
+    consumer_secret=app.config['GOOGLE_OAUTH_CONSUMER_SECRET']
 )
 
 
