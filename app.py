@@ -47,8 +47,9 @@ def get_google_token():
 @app.route('/google')
 def google_login():
     """Sign in with Google."""
+    next_url = request.args.get('next') or request.referrer or None
     return google.authorize(callback=url_for('google_oauth_authorized',
-        next=request.args.get('next') or request.referrer or None))
+        next=next_url))
 
 
 @app.route('/google_oauth_authorized')
