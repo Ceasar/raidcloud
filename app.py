@@ -282,24 +282,39 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/users/<id>/files', methods=['POST'])
+@app.route('/users/<id>/files', methods=['GET','POST'])
 @login_required
 def upload(id):
-    """Upload a file"""
-    uploaded_file = request.files['file']
-    print request
-    if uploaded_file is not None:
-        filename = secure_filename(uploaded_file.filename)
-        uploaded_file.save(os.path.join('tmp', filename))
+    if request.method == 'GET':
+        files = db.session.execute('SELECT id from files where file.user_id == %d' % id).fetchall()
+        file_ids = [row[0] for row in files]
+        return jsonify(files=file_ids)
+    else:
+        """Upload a file"""
+        print request
+        uploaded_file = request.files['file']
+        if uploaded_file is not None:
+            filename = secure_filename(uploaded_file.filename)
+            uploaded_file.save(os.path.join('tmp', filename))
 
-        _file = File(name=filename, size=request.bytes, modified_at=request.lastModifiedDate, user=g.current_user)
-        db.session.add(_file)
-        db.session.commit()
+            _file = File(name=filename, size=request.bytes, modified_at=request.lastModifiedDate, user=g.current_user)
+            db.session.add(_file)
+            db.session.commit()
 
-        split_file(_file)
-        return jsonify({'success': True})
-    return jsonify({'success': False})
+            split_file(_file)
+            return jsonify({'success': True})
+        return jsonify({'success': False})
 
+@app.route('/users/<user_id>/files/<file_id>', methods=['GET'])
+@login_required
+def get_file(user_id, file_id):
+    return to_json(File.query.get(file_id))
+
+
+@app.route('/users/<user_id>/files/<file_id>/download', methods=['GET'])
+@login_required
+def download_file(user_id, file_id):
+    pass
 
 NUM_PARTS = 2
 
