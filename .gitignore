@@ -42,3 +42,5 @@ mkuoff_t
 *.swo
 *.swn
 *.swm
+
+lxsplit-0.2.4/autotrunc

@@ -5,7 +5,6 @@ USAGE
   To put data into cloudbox
   - get file to split from client, put it in /lxsplit-0.2.4/
   - ./splitfile.sh [FILE] [NUM_PARTS]
-  - (NOTE: this command echoes BYTES_PADDED to stdout. remember it)
   - file parts plus parity will be in /tmp/FILE.001, /tmp/FILE.002, /tmp/FILE.par, etc
   - send these files to their respective cloud storage
 
@@ -13,7 +12,7 @@ USAGE
   -  download part files and parity from cloud storage
   - ./autorec.sh [FILE] [NUM_PARTS]
   -  this recovers a missing part file, if any (just run it regardless)
-  - ./joinfile.sh ../tmp/[FILE] [BYTES_PADDED]
+  - ./joinfile.sh ../tmp/[FILE]
   -  the reconstructed file is in /tmp/
   -  send this file to the user 
 
@@ -23,7 +22,6 @@ EXAMPLES
     ./splitfile.sh myfile.txt 4
     Splits myfile.txt into 4 equal pieces, padding the last file with null characters if necessary.
     Also creates a parity file myfile.txt.par
-    RETURNS TO STDOUT the number of bytes that were padded on. Remember this.
 
-    ./joinfile.sh myfile.txt.001 2
+    ./joinfile.sh myfile.txt.001
     Rejoins myfile's various parts, and removes 2 bytes of padding from the end of the final output.

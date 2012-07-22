@@ -35,11 +35,14 @@ lastfilesize=$(ls -l "$lastfile" | awk '{ print $5}')
 numpadbytes=$((chunksizehuman - lastfilesize))
 #echo "Padding $lastfile with $numpadbytes bytes"
 
-for i in $(seq 1 1 $numpadbytes)
+for i in $(seq 1 1 $(($numpadbytes-1)) )
 do
   printf '\0' >> $lastfile
 done
-
+if [ "$numpadbytes" -gt 0 ]
+then
+  printf $numpadbytes >> $lastfile
+fi
 
 # make parity file
 args=""
