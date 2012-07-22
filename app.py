@@ -11,7 +11,7 @@ from functools import wraps
 import pbs
 
 import requests
-from flask import Flask, json, request, session, g, redirect, url_for, \
+from flask import Response, Flask, json, request, session, g, redirect, url_for, \
              render_template, flash
 from flask_oauth import OAuth
 from flask.ext.sqlalchemy import SQLAlchemy
