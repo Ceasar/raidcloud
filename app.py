@@ -31,9 +31,9 @@ google = oauth.remote_app('google',
         'scope': 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/access.file',
         'response_type': 'code'
         },
-    drive_token_url='https://accounts.google.com/o/oauth2/token',
-    drive_token_method='POST',
-    drive_token_params={
+    access_token_url='https://accounts.google.com/o/oauth2/token',
+    access_token_method='POST',
+    access_token_params={
         'grant_type': 'authorization_code'
         },
     consumer_key=app.config['GOOGLE_OAUTH_CONSUMER_KEY'],
