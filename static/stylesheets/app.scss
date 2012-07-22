@@ -76,8 +76,9 @@ h1#center-title {
   height: 545px;
   @include transition(background 0.1s linear);
 
-  .active {
+  &.active {
     background: #deebff;
+    .no-files { border-color: #333; }
   }
 
   .no-files {

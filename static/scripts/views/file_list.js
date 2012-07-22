@@ -13,8 +13,6 @@ define(function (require, exports) {
 
   , events: {
       'drop': 'onFileDrop'
-    , 'dragenter': 'onDragEvent'
-    , 'dragleave': 'onDragEvent'
     }
 
   , collectionEvents: {
@@ -57,14 +55,10 @@ define(function (require, exports) {
       $files.append(view.render().$el);
     }
 
-  , onDragEvent: function (e) {
+  , onFileDrop: function (e) {
       e.stopPropagation();
       e.preventDefault();
-      $(e.target).toggleClass('active');
-    }
-
-  , onFileDrop: function (e) {
-      this.onDragEvent(e);
+      $(e.currentTarget).toggleClass('active');
 
       if (!e.dataTransfer) e = e.originalEvent;
 

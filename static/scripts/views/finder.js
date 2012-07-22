@@ -12,12 +12,20 @@ define(function (require, exports) {
 
   , events: {
       'click #finder-sidebar a': 'backboneNavigate'
+    , 'dragenter #finder-main': 'onDragEvent'
+    , 'dragleave #finder-main': 'onDragEvent'
     }
 
   , render: function () {
       this.$el.html(this.template(this.model.toJSON()));
 
       return this;
+    }
+
+  , onDragEvent: function (e) {
+      e.stopPropagation();
+      e.preventDefault();
+      $(e.currentTarget).toggleClass('active');
     }
 
   , backboneNavigate: function (event) {

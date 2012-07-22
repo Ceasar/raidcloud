@@ -3936,8 +3936,10 @@ h1#center-title {
   -ms-transition: background 0.1s linear;
   -o-transition: background 0.1s linear;
   transition: background 0.1s linear; }
-  #finder-main .active {
+  #finder-main.active {
     background: #deebff; }
+    #finder-main.active .no-files {
+      border-color: #333; }
   #finder-main .no-files {
     height: 85%;
     margin: 5%;
