@@ -14,11 +14,35 @@ define(function (require, exports) {
 
   , template: utils.template('tmpl-file')
 
+  , events: {
+      'click': 'select'
+    , 'click .delete': 'delete'
+    }
+
   , render: function () {
       this.$el.html(this.template(this.model.toJSON()));
       this.$el.attr('draggable', 'true');
 
       return this;
+    }
+
+  , select: function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      this.$el.toggleClass('selected');
+      this.model.set('selected', !this.model.get('selected'));
+    }
+
+  , delete: function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      var collection = this.model.collection;
+
+      this.model.destroy();
+      console.log('file deleted');
+      collection.trigger('removeFile');
     }
 
   });

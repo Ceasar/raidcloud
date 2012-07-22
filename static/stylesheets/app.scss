@@ -8,6 +8,8 @@
           box-sizing: border-box;
 }
 
+a { text-decoration: none !important; }
+
 ul {
   list-style: none;
   margin: 0;
@@ -18,6 +20,10 @@ body {
   background: url('http://subtlepatterns.com/patterns/low_contrast_linen.png');
   padding-top: 40px;
 }
+
+.hidden { display: none; }
+
+/* App */
 
 h1#center-title {
   font-size: 48px;
@@ -32,7 +38,10 @@ h1#center-title {
   width: 1200px;
   height: 768px;
   padding: 60px 121px 60px 119px;
-  margin-left: -120px;
+  margin: 50px 0 0 -120px;
+  opacity: 0;
+  @include transition(display 0.5s linear);
+  &.show { margin-top: 0; }
 }
 
 #finder-header {
@@ -53,7 +62,6 @@ h1#center-title {
       border-bottom: solid 1px transparent;
     }
     a {
-      text-decoration: none;
       color: inherit;
       text-shadow: 0 1px 1px rgba(255,255,255,1.0);
       font-weight: bold;
@@ -76,8 +84,26 @@ h1#center-title {
   height: 545px;
   @include transition(background 0.1s linear);
 
-  .active {
+  &.active {
     background: #deebff;
+    .no-files { border-color: #333; }
+  }
+
+  #delete-all {
+    display: none;
+    float: left;
+    width: 100%;
+    padding: 10px;
+    border-bottom: solid 1px #BBB;
+    @include gradient-vertical(#EEE, #DDD);
+    a {
+      margin-right: 10px;
+      float: right;
+      font-weight: bold;
+      color: darken(red, 30%);
+      text-shadow: 0 1px 1px white;
+      &:hover { color: #000; }
+    }
   }
 
   .no-files {
@@ -89,13 +115,6 @@ h1#center-title {
     line-height: 32px;
     border: dashed 4px #CCC;
     @include border-radius(10px);
-  }
-
-  .file-list {
-    padding: 10px;
-    float: left;
-    width: 100%;
-    height: 100%;
   }
 
   #header {
@@ -126,16 +145,23 @@ h1#center-title {
   }
 }
 
+.file-list {
+  padding: 10px;
+  float: left;
+  width: 100%;
+  height: 100%;
+}
+
 .file {
   display: block;
   float: left;
   width: 180px;
   padding: 5px;
-  text-decoration: none;
+  margin: 0 5px 5px 0;
   cursor: pointer;
   color: inherit;
   border: solid 1px transparent;
-  @include border-radius(5px);
+  @include border-radius(3px);
   @include transition(all 0.1s linear);
   &:hover {
     background: #EEE;
@@ -144,6 +170,7 @@ h1#center-title {
     background: #427fd1;
     color: white;
     border-color: darken(#427fd1, 20%);
+    .delete { color: white; }
   }
   .icon {
     float: left;
@@ -154,6 +181,17 @@ h1#center-title {
     @include text-overflow;
   }
   .filename {
-    margin-top: 5px;
+    margin-top: -8px;
+  }
+  .delete {
+    position: relative;
+    float: right;
+    margin-top: -3px;
+    color: #999;
+    font-size: 16px;
+    font-weight: bold;
+    &:hover {
+      color: #333;
+    }
   }
 }
