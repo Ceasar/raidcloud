@@ -329,7 +329,7 @@ def split_file(_file):
         os.chdir('/tmp')
         size = os.path.getsize(_file.name)
         chunk_size = (size + NUM_PARTS - 1) / NUM_PARTS
-        subprocess.call(['app/lxsplit-0.2.4/lxsplit', '-s', '/tmp/' + _file.name, str(chunk_size) + 'b'])
+        subprocess.call(['/app/lxsplit-0.2.4/lxsplit', '-s', '/tmp/' + _file.name, str(chunk_size) + 'b'])
         os.remove(_file.name)
         os.chdir('/app')
         #os.chdir('lxsplit-0.2.4')
