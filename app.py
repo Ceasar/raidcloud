@@ -4,6 +4,7 @@ from urllib2 import Request, urlopen, URLError
 import webbrowser
 import datetime
 import pytz
+import subprocess
 
 from functools import wraps
 
@@ -110,6 +111,10 @@ def dropbox_oauth_authorized():
     dropbox_id, dropbox_token = access_token.key, access_token.secret
 
     name = dropbox.client.DropboxClient(sess).account_info()['display_name']
+    quota = dropbox.client.DropboxClient(sess).account_info()['quota_info']['quota']
+    normal = dropbox.client.DropboxClient(sess).account_info()['quota_info']['normal']
+    shared = dropbox.client.DropboxClient(sess).account_info()['quota_info']['shared']
+    total = normal + shared
 
     user = g.current_user or User.query.filter_by(dropbox_id=dropbox_id).first()
     if user:
@@ -117,6 +122,8 @@ def dropbox_oauth_authorized():
         if user.dropbox_token != dropbox_token:
             user.dropbox_token = dropbox_token
             user.dropbox_id = dropbox_id
+            user.dropbox_quota = quota
+            user.dropbox_total = total
             user.name = name
     else:
         # Create user
@@ -168,6 +175,8 @@ def google_oauth_authorized(resp):
                 user.drive_token = drive_token
                 user.drive_id = drive_id
                 user.name = name
+                user.drive_total = 5368709
+                user.drive_quota = 5368709120
         else:
             # Create user
             user = User(drive_id=drive_id, drive_token=drive_token, name=name)
@@ -233,9 +242,13 @@ class User(db.Model):
 
     drive_id = db.Column(db.String(255), nullable=True)
     drive_token = db.Column(db.String(255), nullable=True)
+    drive_quota = db.Column(db.BigInteger, nullable=True)
+    drive_total = db.Column(db.BigInteger, nullable=True)
 
     dropbox_id = db.Column(db.String(255), nullable=True)
     dropbox_token = db.Column(db.String(255), nullable=True)
+    dropbox_quota = db.Column(db.BigInteger, nullable=True)
+    dropbox_total = db.Column(db.BigInteger, nullable=True)
 
     files = db.relation('File', backref='user')
 
@@ -325,9 +338,16 @@ NUM_PARTS = 2
 def split_file(_file):
     """Split the file and upload its parts"""
     if _file is not None:
-        os.chdir('lxsplit-0.2.4')
-        os.popen('./splitfile.sh %s %d' % (_file.name, NUM_PARTS))
+        os.chdir('tmp')
+        size = os.path.getsize(_file.name)
+        chunk_size = (size + NUM_PARTS - 1) / NUM_PARTS
+        subprocess.call(['../lxsplit-0.2.4/lxsplit', '-s', '../tmp/' + _file.name, str(chunk_size) + 'b'])
+        os.remove(_file.name)
         os.chdir('../')
+        #os.chdir('lxsplit-0.2.4')
+        #os.popen('./splitfile.sh %s %d' % (_file.name, NUM_PARTS))
+        #os.chdir('../')
+        print os.getcwd()
     for i in xrange(1, NUM_PARTS+1):
         part_filename = "%s.%03d" % (_file.name, i)
         chunk = Chunk(file=_file, parity=False, name=part_filename)
