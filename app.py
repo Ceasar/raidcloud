@@ -122,13 +122,14 @@ def dropbox_oauth_authorized():
         if user.dropbox_token != dropbox_token:
             user.dropbox_token = dropbox_token
             user.dropbox_id = dropbox_id
-            user.dropbox_quota = quota
-            user.dropbox_total = total
             user.name = name
     else:
         # Create user
         user = User(dropbox_id=dropbox_id, dropbox_token=dropbox_token, name=name)
         db.session.add(user)
+    if not user.dropbox_quota:
+        user.dropbox_quota = quota
+        user.dropbox_total = total
 
     db.session.commit()
     session['user_id'] = user.id
@@ -175,12 +176,12 @@ def google_oauth_authorized(resp):
                 user.drive_token = drive_token
                 user.drive_id = drive_id
                 user.name = name
-                user.drive_total = 5368709
-                user.drive_quota = 5368709120
         else:
             # Create user
             user = User(drive_id=drive_id, drive_token=drive_token, name=name)
             db.session.add(user)
+        user.drive_total = 5368709
+        user.drive_quota = 5368709120
 
         db.session.commit()
         session['user_id'] = user.id
