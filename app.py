@@ -28,12 +28,12 @@ google = oauth.remote_app('google',
     authorize_url='https://accounts.google.com/o/oauth2/auth',
     request_token_url=None,
     request_token_params={
-        'scope': 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/drive.file',
+        'scope': 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/access.file',
         'response_type': 'code'
         },
-    access_token_url='https://accounts.google.com/o/oauth2/token',
-    access_token_method='POST',
-    access_token_params={
+    drive_token_url='https://accounts.google.com/o/oauth2/token',
+    drive_token_method='POST',
+    drive_token_params={
         'grant_type': 'authorization_code'
         },
     consumer_key=app.config['GOOGLE_OAUTH_CONSUMER_KEY'],
@@ -44,8 +44,8 @@ dropbox = oauth.remote_app('dropbox',
     base_url='https://api.dropbox.com/1',
     authorize_url='https://dropbox.com/1/oauth/authorize',
     request_token_url='https://api.dropbox.com/1/oauth/request_token',
-    access_token_url='https://api.dropbox.com/1/oauth/access_token',
-    access_token_method='GET',
+    dropbox_token_url='https://api.dropbox.com/1/oauth/dropbox_token',
+    dropbox_token_method='GET',
     consumer_key=app.config['DROPBOX_OAUTH_CONSUMER_KEY'],
     consumer_secret=app.config['DROPBOX_OAUTH_CONSUMER_SECRET']
 )
@@ -78,17 +78,17 @@ def google_oauth_authorized(resp):
     """Store the oauth_token and secret and redirect."""
     if resp is not None:
         drive_id = resp['id_token']
-        access_token = resp['access_token']
-        session['google_token'] = (drive_id, access_token)
+        drive_token = resp['access_token']
+        session['google_token'] = (drive_id, drive_token)
         user = User.query.filter_by(drive_id=drive_id).first()
         if user:
-            # Update the access_token if needed
-            if user.drive_token != access_token:
-                user.drive_token = access_token
+            # Update the drive_token if needed
+            if user.drive_token != drive_token:
+                user.drive_token = drive_token
                 user.save()
         else:
             # Create a new user
-            user = User(drive_id=drive_id, access_token=access_token)
+            user = User(drive_id=drive_id, drive_token=drive_token)
             user.save()
     return redirect(request.args.get('next') or url_for('index'))
 
@@ -137,8 +137,8 @@ class Chunk(db.Model):
 def before_request():
     g.user = None
     if 'google_token' in session:
-        drive_id, access_token = session['google_token']
-        g.user = User.query.filter_by(user_id=drive_id).first()
+        drive_id, drive_token = session['google_token']
+        g.user = User.query.filter_by(drive_id=drive_id).first()
 
 
 @app.route('/')
