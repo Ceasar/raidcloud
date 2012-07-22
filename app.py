@@ -2,10 +2,13 @@ import os
 import json
 from urllib2 import Request, urlopen, URLError
 
+import pbs
+
 from flask import Flask, request, session, g, redirect, url_for, \
              render_template, flash
 from oauth import OAuth
 from flask.ext.sqlalchemy import SQLAlchemy
+from werkzeug import secure_filename
 
 from auth import authenticate
 
@@ -173,6 +176,26 @@ def before_request():
 @app.route('/account')
 def index():
     return render_template('app.html')
+
+
+@app.route('/user/<id>/files', methods=['POST'])
+def upload():
+    """Upload a file"""
+    file = request.files['file']
+    if file is not None:
+        filename = secure_filename(file.filename)
+        file.save(os.path.join('tmp', filename))
+        handle_file(filename)
+
+
+NUM_PARTS = 2
+
+def handle_file(filename):
+    """Split the file and upload its parts"""
+    if filename is not None:
+        pbs.sh('lxsplit-0.2.4/splitfile.sh', 'tmp/' + filename, NUM_PARTS)
+    for i in [0..NUM_PARTS]:
+        part_filename = "%s%02d" % (filename, i)
 
 
 @app.route('/register', methods=['GET', 'POST'])

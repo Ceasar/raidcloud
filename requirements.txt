@@ -10,5 +10,6 @@ alembic==0.3.4
 distribute==0.6.24
 httplib2==0.7.4
 oauth2==1.5.211
+pbs==0.108
 psycopg2==2.4.5
 wsgiref==0.1.2
