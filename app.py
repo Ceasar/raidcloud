@@ -318,8 +318,8 @@ def upload(id):
             db.session.commit()
 
             split_file(_file)
-            return jsonify({'success': True})
-        return jsonify({'success': False})
+            return to_json(_file)
+        return jsonify({})
 
 @app.route('/users/<user_id>/files/<file_id>', methods=['GET'])
 @login_required
