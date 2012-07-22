@@ -346,7 +346,7 @@ def download_file(user_id, file_id):
 
     f = open('tmp/' + _file.name, 'wb')
     for datum in data:
-        f.write(data)
+        f.write(datum)
 
     return Response(f.read(), mimetype='application/binary')
 
