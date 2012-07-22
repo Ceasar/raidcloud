@@ -238,6 +238,15 @@ class User(db.Model):
 
     files = db.relation('File', backref='user')
 
+    @property
+    def has_dropbox(self):
+        return self.dropbox_id is not None
+
+    @property
+    def has_google(self):
+        return self.drive_id is not None
+
+
 
 class File(db.Model):
     id = db.Column(db.Integer, primary_key=True)
