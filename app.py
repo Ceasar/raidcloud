@@ -278,6 +278,7 @@ class Chunk(db.Model):
     parity = db.Column(db.Boolean, nullable=False, default=False)
     service = db.Column(db.String(32), nullable=True)
     name = db.Column(db.String(255), nullable=False)
+    drive_id = db.Column(db.Integer, nullable=True)
 
 
 ###
@@ -413,14 +414,16 @@ def get_dropbox(chunk):
 
 def get_drive(chunk):
     drive_token = g.current_user.drive_token
-    url = "https://www.googleapis.com/upload/drive/v2/files?uploadType=media"
+    url = "https://www.googleapis.com/upload/drive/v2/files/" + chunk.drive_id
     headers = {
         'Authorization': 'OAuth ' + drive_token
     }
     data = None
     resp = requests.get(url, data=data, headers=headers)
     downloadURL = resp.json['downloadUrl']
-    return requests.get(downloadURL, data=data, headers=headers)
+    response = requests.get(downloadURL, data=data, headers=headers)
+    out = open('tmp/' + chunk.name, 'w')
+    out.write(response.read())
 
 
 def put_drive(chunk):
@@ -434,8 +437,8 @@ def put_drive(chunk):
     }
     chunk.service = 'drive'
     db.session.commit()
-    requests.post(url, data=data, headers=headers).text
-
+    response = requests.post(url, data=data, headers=headers).text
+    chunk.drive_id = response.json['id']
 
 @app.route('/foo')
 def foo():
