@@ -47,9 +47,12 @@ define(function (require, exports) {
 
   , addFile: function (file) {
       var $files = this.$('.file-list')
+        , $noFiles = this.$('.no-files')
         , view = new FileView({
             model: file
           });
+
+      if ($noFiles.is(':visible')) $noFiles.slideUp('fast');
 
       $files.append(view.render().$el);
     }

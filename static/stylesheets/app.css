@@ -3949,6 +3949,11 @@ h1#center-title {
     -webkit-border-radius: 10px;
     -moz-border-radius: 10px;
     border-radius: 10px; }
+  #finder-main .file-list {
+    padding: 10px;
+    float: left;
+    width: 100%;
+    height: 100%; }
   #finder-main #header {
     padding: 10px;
     margin-bottom: 10px;
@@ -3984,5 +3989,34 @@ h1#center-title {
 
 .file {
   display: block;
-  width: 100px;
-  height: 120px; }
+  float: left;
+  width: 180px;
+  padding: 5px;
+  text-decoration: none;
+  cursor: pointer;
+  color: inherit;
+  border: solid 1px transparent;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  -webkit-transition: all 0.1s linear;
+  -moz-transition: all 0.1s linear;
+  -ms-transition: all 0.1s linear;
+  -o-transition: all 0.1s linear;
+  transition: all 0.1s linear; }
+  .file:hover {
+    background: #EEE; }
+  .file:active, .file.selected {
+    background: #427fd1;
+    color: white;
+    border-color: #224f8b; }
+  .file .icon {
+    float: left; }
+  .file .filename, .file .modified {
+    float: left;
+    width: 120px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis; }
+  .file .filename {
+    margin-top: 5px; }
