@@ -11,7 +11,10 @@
         <li id="<%= slug %>" class="active">
           <h1><%= provider.name %></h1>
           <img src="static/images/<%= slug %>.png" />
-          <p>Successfully linked.</p>
+          <p>
+            Successfully linked. <br/>
+            <%= used %>% used
+          </p>
         </li>
       <% } else { %>
         <a href="<%= provider.url %>">

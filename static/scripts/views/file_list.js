@@ -13,8 +13,6 @@ define(function (require, exports) {
 
   , events: {
       'drop': 'onFileDrop'
-    , 'dragstart': 'onDragStart'
-    , 'dragend': 'onDragEnd'
     , 'click #delete-all a': 'deleteSelected'
     }
 
@@ -104,16 +102,6 @@ define(function (require, exports) {
       this.collection.uploadFiles(e.dataTransfer);
 
       this.$('#progress').slideDown('fast');
-    }
-
-  , onDragStart: function (e) {
-      console.log(e);
-
-    }
-
-  , onDragEnd: function (e) {
-      console.log(e);
-
     }
 
   });
