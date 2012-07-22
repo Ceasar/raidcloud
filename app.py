@@ -73,7 +73,7 @@ def dropbox_login():
     request_token = sess.obtain_request_token()
     session['dropbox_key'] = request_token
 
-    next_url = request.args.get('next') or request.referrer
+    next_url = request.referrer
     callback = url_for('dropbox_oauth_authorized', next=next_url,
                            _external=True)
     url = sess.build_authorize_url(request_token, oauth_callback=callback)
@@ -83,7 +83,7 @@ def dropbox_login():
 @app.route('/google')
 def google_login():
     """Sign in with Google."""
-    next_url = request.args.get('next') or request.referrer
+    next_url = request.referrer
     callback_url = url_for('google_oauth_authorized', next=next_url,
                            _external=True)
     return google.authorize(callback=callback_url)
