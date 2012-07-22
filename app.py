@@ -1,13 +1,17 @@
 import os
-import json
+import json_lib
+from json_lib import jsonify, loads
 from urllib2 import Request, urlopen, URLError
+
+from functools import wraps
 
 import pbs
 
-from flask import Flask, request, session, g, redirect, url_for, \
+from flask import Flask, json, request, session, g, redirect, url_for, \
              render_template, flash
 from oauth import OAuth
 from flask.ext.sqlalchemy import SQLAlchemy
+from sqlalchemy.ext.declarative import DeclarativeMeta
 from werkzeug import secure_filename
 
 from auth import authenticate
@@ -67,6 +71,7 @@ def get_google_token():
     """Get the google OAuth token in form (token, secret).
     If no token exists, return None instead."""
     return session.get('google_token')
+    return (drive_id, drive_token)
 
 @app.route('/dropbox')
 def dropbox_login():
@@ -109,7 +114,6 @@ def google_oauth_authorized(resp):
         """
         drive_id = res['id']
 
-        session['google_token'] = (drive_id, drive_token)
         user = User.query.filter_by(drive_id=drive_id).first()
         if user:
             # Update the drive_token if needed
@@ -124,10 +128,48 @@ def google_oauth_authorized(resp):
     return redirect(request.args.get('next') or url_for('index'))
 
 
+def get_current_user():
+    """Convenience method to look up the current user's model"""
+    if session.user_id is not None:
+        return User.query.get(session.user_id)
+    else:
+        return None
+
 def get_user_id(username):
     """Convenience method to look up the id for a username."""
     user = User.query.filter_by(username=username).first()
     return user.user_id if user else None
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if get_current_user() is None:
+            return redirect(url_for('login'), next=request.url)
+        return f(*args, **kwargs)
+    return decorated_function
+
+def to_json(obj):
+    _visited_objs = []
+    def recurse(model):
+        if isinstance(model.__class__, DeclarativeMeta):
+            if model in _visited_objs:
+                return None
+            _visited_objs.append(model)
+
+            fields = dict()
+            for field in [x for x in dir(model) if not x.startswith('_') and x not in ['metadata', 'query', 'query_class']]:
+                print field
+                v = model.__getattribute__(field)
+                if isinstance(v, list) and len(v) > 0 and isinstance(v[0].__class__, DeclarativeMeta):
+                    child_list = []
+                    for child in v:
+                        child_list.append(recurse(child))
+                    fields[field] = child_list
+                else:
+                    fields[field] = recurse(v)
+            return fields
+        return model
+    return jsonify(recurse(obj))
 
 ###
 # Models
@@ -244,6 +286,12 @@ def logout():
     return redirect(url_for('index'))
 
 
+@app.route('/user')
+@login_required
+def user():
+    user = get_current_user()
+    return to_json(user)
+
 @app.route('/users')
 def show_users(id):
     return {}
@@ -251,7 +299,7 @@ def show_users(id):
 
 @app.route('/users/<id>')
 def show_user(id):
-    return {}
+    return to_json(User.query.get(id))
 
 
 @app.route('/files')
