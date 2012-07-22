@@ -1,8 +1,21 @@
 FILE SPLITTER/JOINER
 
 USAGE
-    ./splitfile.sh [FILE] [NUM_PARTS]
-    ./joinfile.sh [FILE.001] [BYTES_PADDED]
+
+  To put data into cloudbox
+  - get file to split from client, put it in /lxsplit-0.2.4/
+  - ./splitfile.sh [FILE] [NUM_PARTS]
+  - (NOTE: this command echoes BYTES_PADDED to stdout. remember it)
+  - file parts plus parity will be in /tmp/FILE.001, /tmp/FILE.002, /tmp/FILE.par, etc
+  - send these files to their respective cloud storage
+
+  To get data from cloudbox
+  -  download part files and parity from cloud storage
+  - ./autorec.sh [FILE] [NUM_PARTS]
+  -  this recovers a missing part file, if any (just run it regardless)
+  - ./joinfile.sh ../tmp/[FILE] [BYTES_PADDED]
+  -  the reconstructed file is in /tmp/
+  -  send this file to the user 
 
 
 EXAMPLES
