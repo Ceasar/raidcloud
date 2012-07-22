@@ -1,12 +1,11 @@
 import os
 
-from flask.ext.sqlalchemy import SQLAlchemy
 from flask import Flask, request, session, g, redirect, url_for, \
              render_template, flash
 from flask.ext.oauth import OAuth
+from flask.ext.sqlalchemy import SQLAlchemy
 
 from auth import authenticate
-# TODO: Make models file
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -32,6 +31,34 @@ google = oauth.remote_app('google',
         'scope': 'https://www.googleapis.com/auth/drive.file'
     },
 )
+
+
+@google.tokengetter
+def get_google_token():
+    """Get the google OAuth token in form (token, secret).
+    If no token exists, return None instead."""
+    return session.get('google_token')
+
+
+@app.route('/google')
+def google_login():
+    """Sign in with Google."""
+    return google.authorize(callback=url_for('google_oauth_authorized',
+        next=request.args.get('next') or request.referrer or None))
+
+
+@app.route('/google_oauth_authorized')
+@google.authorized_handler
+def google_oauth_authorized(resp):
+    """Store the oauth_token and secret and redirect."""
+    if resp is not None:
+        session['google_token'] = (
+            resp['oauth_token'],
+            resp['oauth_token_secret']
+        )
+        # TODO: Check to make sure this is right
+        session['google_user'] = resp['screen_name']
+    return redirect(request.args.get('next') or url_for('index'))
 
 
 def get_user_id(username):
