@@ -1,13 +1,21 @@
 import os
-import json
-from urllib2 import Request, urlopen
+from json_lib import jsonify, loads
+from urllib2 import Request, urlopen, URLError
+import webbrowser
 
-from flask import Flask, request, session, g, redirect, url_for, \
+from functools import wraps
+
+import pbs
+
+from flask import Flask, json, request, session, g, redirect, url_for, \
              render_template, flash
-from oauth import OAuth
+from flask_oauth import OAuth
 from flask.ext.sqlalchemy import SQLAlchemy
+from sqlalchemy.ext.declarative import DeclarativeMeta
+from werkzeug import secure_filename
 
 from auth import authenticate
+import dropbox
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -43,23 +51,6 @@ google = oauth.remote_app('google',
     consumer_secret=app.config['GOOGLE_OAUTH_CONSUMER_SECRET']
 )
 
-dropbox = oauth.remote_app('dropbox',
-    base_url='https://api.dropbox.com/1',
-    authorize_url='https://dropbox.com/1/oauth/authorize',
-    request_token_url='https://api.dropbox.com/1/oauth/request_token',
-    access_token_url='https://api.access.com/1/oauth/access_token',
-    access_token_method='POST',
-    consumer_key=app.config['DROPBOX_OAUTH_CONSUMER_KEY'],
-    consumer_secret=app.config['DROPBOX_OAUTH_CONSUMER_SECRET']
-)
-
-
-@dropbox.tokengetter
-def get_dropbox_token():
-    """Get the dropbox OAuth token in form (token, secret).
-    If no token exists, return None instead."""
-    return session.get('dropbox_token')
-
 
 @google.tokengetter
 def get_google_token():
@@ -71,11 +62,18 @@ def get_google_token():
 @app.route('/dropbox')
 def dropbox_login():
     """Sign in with Dropbox."""
+    app_key = app.config['DROPBOX_OAUTH_CONSUMER_KEY']
+    app_secret = app.config['DROPBOX_OAUTH_CONSUMER_SECRET']
+
+    sess = dropbox.session.DropboxSession(app_key, app_secret, 'app_folder')
+    request_token = sess.obtain_request_token()
+    session['dropbox_key'] = request_token
+
     next_url = request.args.get('next') or request.referrer
-    callback_url = url_for('dropbox_oauth_authorized', next=next_url,
+    callback = url_for('dropbox_oauth_authorized', next=next_url,
                            _external=True)
-    app.logger.debug(callback_url)
-    return dropbox.authorize(callback=callback_url)
+    url = sess.build_authorize_url(request_token, oauth_callback=callback)
+    return redirect(url)
 
 
 @app.route('/google')
@@ -88,25 +86,31 @@ def google_login():
 
 
 @app.route('/dropbox_oauth_authorized')
-@dropbox.authorized_handler
-def dropbox_oauth_authorized(resp):
+def dropbox_oauth_authorized():
     """Store the oauth_token and secret and redirect."""
-    if resp is not None:
-        dropbox_id = None
-        dropbox_token = resp['access_token']
 
-        session['google_token'] = (dropbox_id, dropbox_token)
-        user = User.query.filter_by(dropbox_id=dropbox_id).first()
-        if user:
-            # Update the dropbox_token if needed
-            if user.dropbox_token != dropbox_token:
-                user.dropbox_token = dropbox_token
-                db.session.commit()
-        else:
-            # Create a new user
-            user = User(dropbox_id=dropbox_id, dropbox_token=dropbox_token)
-            db.session.add(user)
-            db.session.commit()
+    app_key = app.config['DROPBOX_OAUTH_CONSUMER_KEY']
+    app_secret = app.config['DROPBOX_OAUTH_CONSUMER_SECRET']
+
+    sess = dropbox.session.DropboxSession(app_key, app_secret, 'app_folder')
+
+    request_token = session['dropbox_key']
+    access_token = sess.obtain_access_token(request_token)
+    dropbox_id, dropbox_token = access_token.key, access_token.secret
+
+    user = get_current_user() or User.query.filter_by(dropbox_id=dropbox_id).first()
+    if user:
+        # Add/Update user dropbox creds
+        if user.dropbox_token != dropbox_token:
+            user.dropbox_token = dropbox_token
+            user.dropbox_id = dropbox_id
+    else:
+        # Create user
+        user = User(dropbox_id=dropbox_id, dropbox_token=dropbox_token)
+        db.session.add(user)
+    db.session.commit()
+    session['user_id'] = user.id
+
     return redirect(request.args.get('next') or url_for('index'))
 
 
@@ -136,25 +140,64 @@ def google_oauth_authorized(resp):
         """
         drive_id = res['id']
 
-        session['google_token'] = (drive_id, drive_token)
-        user = User.query.filter_by(drive_id=drive_id).first()
+        user = get_current_user() or User.query.filter_by(drive_id=drive_id).first()
         if user:
-            # Update the drive_token if needed
+            # Add/Update user drive creds
             if user.drive_token != drive_token:
                 user.drive_token = drive_token
-                db.session.commit()
+                user.drive_id = drive_id
         else:
-            # Create a new user
+            # Create user
             user = User(drive_id=drive_id, drive_token=drive_token)
             db.session.add(user)
-            db.session.commit()
+        db.session.commit()
+        session['user_id'] = user.id
+
     return redirect(request.args.get('next') or url_for('index'))
 
+
+def get_current_user():
+    """Convenience method to look up the current user's model"""
+    if hasattr(session, 'user_id') and session.user_id is not None:
+        return User.query.get(session.user_id)
+    else:
+        return None
 
 def get_user_id(username):
     """Convenience method to look up the id for a username."""
     user = User.query.filter_by(username=username).first()
     return user.user_id if user else None
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if get_current_user() is None:
+            return redirect(url_for('login'), next=request.url)
+        return f(*args, **kwargs)
+    return decorated_function
+
+def to_json(obj):
+    _visited_objs = []
+    def recurse(model):
+        if isinstance(model.__class__, DeclarativeMeta):
+            if model in _visited_objs:
+                return None
+            _visited_objs.append(model)
+
+            fields = dict()
+            for field in [x for x in dir(model) if not x.startswith('_') and x not in ['metadata', 'query', 'query_class']]:
+                print field
+                v = model.__getattribute__(field)
+                if isinstance(v, list) and len(v) > 0 and isinstance(v[0].__class__, DeclarativeMeta):
+                    child_list = []
+                    for child in v:
+                        child_list.append(recurse(child))
+                    fields[field] = child_list
+                else:
+                    fields[field] = recurse(v)
+            return fields
+        return model
+    return jsonify(recurse(obj))
 
 ###
 # Models
@@ -205,6 +248,26 @@ def index():
     return render_template('app.html')
 
 
+@app.route('/user/<id>/files', methods=['POST'])
+def upload():
+    """Upload a file"""
+    file = request.files['file']
+    if file is not None:
+        filename = secure_filename(file.filename)
+        file.save(os.path.join('tmp', filename))
+        handle_file(filename)
+
+
+NUM_PARTS = 2
+
+def handle_file(filename):
+    """Split the file and upload its parts"""
+    if filename is not None:
+        pbs.sh('lxsplit-0.2.4/splitfile.sh', 'tmp/' + filename, NUM_PARTS)
+    for i in [0..NUM_PARTS]:
+        part_filename = "%s%02d" % (filename, i)
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     """Register a user."""
@@ -251,14 +314,21 @@ def logout():
     return redirect(url_for('index'))
 
 
+@login_required
+@app.route('/user')
+def user():
+    user = get_current_user()
+    return to_json(user)
+
+@login_required
 @app.route('/users')
-def show_users(id):
-    return {}
+def show_users():
+   return jsonify(users=[row[0] for row in db.session.execute('SELECT id from "user"').fetchall()])
 
 
 @app.route('/users/<id>')
 def show_user(id):
-    return {}
+    return to_json(User.query.get(id))
 
 
 @app.route('/files')

@@ -40,6 +40,8 @@ do
   printf '\0' >> $lastfile
 done
 
+
+# make parity file
 args=""
 IFS=$'\n'
 out="$1".par
@@ -50,7 +52,10 @@ do
   mv -f ./tempparity "$out"
 done
 
-# make parity file
-#./multifileparity.sh "$1".par $args
+files=$(ls -1 | grep -E "$1.(par|[0-9]{3})")
+for f in $files
+do
+  mv "$f" ../tmp/"$f"
+done
 
 echo "$numpadbytes"
