@@ -312,7 +312,7 @@ def split_file(_file):
         chunk = Chunk(file=_file, parity=False, name=part_filename)
         db.session.add(chunk)
         db.session.commit()
-        if i == 0:
+        if i % 2 == 0:
             put_dropbox(chunk)
         else:
             put_drive(chunk)
@@ -341,12 +341,14 @@ def put_drive(chunk):
     # drive_token = g.current_user.drive_token
     drive_token = 'ya29.AHES6ZROMHvNXdvFM_ewL50LghsZ0RNBykThcoBqpSP55sV8'
     url = "https://www.googleapis.com/upload/drive/v2/files?uploadType=media"
-    data = open(chunk).read()
+    data = open('dev/' + chunk.name).read()
     headers = {
         'Content-Type': '',
         'Authorization': 'OAuth ' + drive_token
     }
-    return requests.post(url, data=data, headers=headers).text
+    chunk.service = 'drive'
+    db.session.commit()
+    requests.post(url, data=data, headers=headers).text
 
 
 @app.route('/foo')
