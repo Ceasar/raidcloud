@@ -35,3 +35,9 @@ lxsplit
 mkuoff_t
 *~
 .DS_Store
+
+#swp files
+*.swp
+*.swo
+*.swn
+*.swm

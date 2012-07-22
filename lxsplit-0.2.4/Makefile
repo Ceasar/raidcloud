@@ -53,6 +53,8 @@ all: $(BINARY)
 
 $(BINARY): $(OBJECTS)
 	$(CC) $(LDFLAGS) -o $(BINARY) $(OBJECTS) $(LDLIBS)
+	$(CC) $(LDFLAGS) -o fileparity fileparity.c
+	gcc $(LDFLAGS) -o truncate truncate.c
 
 uoff_t.h: mkuoff_t.c
 	$(CC) $(CFLAGS) $(FILESIZE_DEFS) -o mkuoff_t mkuoff_t.c

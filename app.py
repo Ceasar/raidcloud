@@ -1,4 +1,6 @@
 import os
+import json
+from urllib2 import Request, urlopen
 
 from flask import Flask, request, session, g, redirect, url_for, \
              render_template, flash
@@ -15,10 +17,11 @@ try:
 except KeyError:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://raid:cloud@localhost/raidcloud'
 
+
 app.config['GOOGLE_OAUTH_CONSUMER_KEY'] = '575198791092.apps.googleusercontent.com'
 app.config['GOOGLE_OAUTH_CONSUMER_SECRET'] = 'ei7THdOn1OyYCgYL_51ntTqK'
-app.config['DROPBOX_OAUTH_CONSUMER_KEY'] = ''
-app.config['DROPBOX_OAUTH_CONSUMER_SECRET'] = ''
+app.config['DROPBOX_OAUTH_CONSUMER_KEY'] = 'e7fbqqqwfb4zkyo'
+app.config['DROPBOX_OAUTH_CONSUMER_SECRET'] = 'ohx5ci47pm717wh'
 app.secret_key = 'ei7THdOn1OyYCgYL_51ntTqK'
 db = SQLAlchemy(app)
 
@@ -28,7 +31,7 @@ google = oauth.remote_app('google',
     authorize_url='https://accounts.google.com/o/oauth2/auth',
     request_token_url=None,
     request_token_params={
-        'scope': 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/drive.file',
+        'scope': 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/drive.file',
         'response_type': 'code'
         },
     access_token_url='https://accounts.google.com/o/oauth2/token',
@@ -44,8 +47,8 @@ dropbox = oauth.remote_app('dropbox',
     base_url='https://api.dropbox.com/1',
     authorize_url='https://dropbox.com/1/oauth/authorize',
     request_token_url='https://api.dropbox.com/1/oauth/request_token',
-    access_token_url='https://api.dropbox.com/1/oauth/access_token',
-    access_token_method='GET',
+    access_token_url='https://api.access.com/1/oauth/access_token',
+    access_token_method='POST',
     consumer_key=app.config['DROPBOX_OAUTH_CONSUMER_KEY'],
     consumer_secret=app.config['DROPBOX_OAUTH_CONSUMER_SECRET']
 )
@@ -53,9 +56,10 @@ dropbox = oauth.remote_app('dropbox',
 
 @dropbox.tokengetter
 def get_dropbox_token():
-    """Get the google OAuth token in form (token, secret).
+    """Get the dropbox OAuth token in form (token, secret).
     If no token exists, return None instead."""
     return session.get('dropbox_token')
+
 
 @google.tokengetter
 def get_google_token():
@@ -64,12 +68,46 @@ def get_google_token():
     return session.get('google_token')
 
 
+@app.route('/dropbox')
+def dropbox_login():
+    """Sign in with Dropbox."""
+    next_url = request.args.get('next') or request.referrer
+    callback_url = url_for('dropbox_oauth_authorized', next=next_url,
+                           _external=True)
+    app.logger.debug(callback_url)
+    return dropbox.authorize(callback=callback_url)
+
+
 @app.route('/google')
 def google_login():
     """Sign in with Google."""
-    next_url = request.args.get('next') or request.referrer or None
-    callback_url = url_for('google_oauth_authorized', next=next_url, _external=True)
+    next_url = request.args.get('next') or request.referrer
+    callback_url = url_for('google_oauth_authorized', next=next_url,
+                           _external=True)
     return google.authorize(callback=callback_url)
+
+
+@app.route('/dropbox_oauth_authorized')
+@dropbox.authorized_handler
+def dropbox_oauth_authorized(resp):
+    """Store the oauth_token and secret and redirect."""
+    if resp is not None:
+        dropbox_id = None
+        dropbox_token = resp['access_token']
+
+        session['google_token'] = (dropbox_id, dropbox_token)
+        user = User.query.filter_by(dropbox_id=dropbox_id).first()
+        if user:
+            # Update the dropbox_token if needed
+            if user.dropbox_token != dropbox_token:
+                user.dropbox_token = dropbox_token
+                db.session.commit()
+        else:
+            # Create a new user
+            user = User(dropbox_id=dropbox_id, dropbox_token=dropbox_token)
+            db.session.add(user)
+            db.session.commit()
+    return redirect(request.args.get('next') or url_for('index'))
 
 
 @app.route('/google_oauth_authorized')
@@ -77,19 +115,39 @@ def google_login():
 def google_oauth_authorized(resp):
     """Store the oauth_token and secret and redirect."""
     if resp is not None:
-        drive_id = resp['id_token']
-        access_token = resp['access_token']
-        session['google_token'] = (drive_id, access_token)
+        drive_id = None
+        drive_token = resp['access_token']
+
+        headers = {'Authorization': 'OAuth ' + drive_token}
+        req = Request('https://www.googleapis.com/oauth2/v1/userinfo',
+                      None, headers)
+        res = json.loads(urlopen(req).read())
+        """
+        {
+             "id": "117416155311954994698",
+             "name": "Ceasar Bautista",
+             "given_name": "Ceasar",
+             "family_name": "Bautista",
+             "link": "https://plus.google.com/117416155311954994698",
+             "picture": "https://lh4.googleusercontent.com/-B2ePTSgN6G8/AAAAAAAAAAI/AAAAAAAAAKE/rCvvdkB3Mpo/photo.jpg",
+             "gender": "male",
+             "locale": "en-US"
+        }
+        """
+        drive_id = res['id']
+
+        session['google_token'] = (drive_id, drive_token)
         user = User.query.filter_by(drive_id=drive_id).first()
         if user:
-            # Update the access_token if needed
-            if user.drive_token != access_token:
-                user.drive_token = access_token
-                user.save()
+            # Update the drive_token if needed
+            if user.drive_token != drive_token:
+                user.drive_token = drive_token
+                db.session.commit()
         else:
             # Create a new user
-            user = User(drive_id=drive_id, access_token=access_token)
-            user.save()
+            user = User(drive_id=drive_id, drive_token=drive_token)
+            db.session.add(user)
+            db.session.commit()
     return redirect(request.args.get('next') or url_for('index'))
 
 
@@ -137,8 +195,8 @@ class Chunk(db.Model):
 def before_request():
     g.user = None
     if 'google_token' in session:
-        drive_id, access_token = session['google_token']
-        g.user = User.query.filter_by(user_id=drive_id).first()
+        drive_id, drive_token = session['google_token']
+        g.user = User.query.filter_by(drive_id=drive_id).first()
 
 
 @app.route('/')
