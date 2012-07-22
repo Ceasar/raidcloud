@@ -3869,6 +3869,11 @@ a.label:hover, a.badge:hover {
   -moz-box-sizing: border-box;
   box-sizing: border-box; }
 
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0; }
+
 body {
   background: url("http://subtlepatterns.com/patterns/low_contrast_linen.png");
   padding-top: 40px; }
@@ -3895,7 +3900,6 @@ h1#center-title {
   width: 136px;
   color: #333; }
   #finder-sidebar ul {
-    list-style: none;
     padding: 10px 0;
     margin: 0; }
     #finder-sidebar ul li {
@@ -3945,6 +3949,38 @@ h1#center-title {
     -webkit-border-radius: 10px;
     -moz-border-radius: 10px;
     border-radius: 10px; }
+  #finder-main #header {
+    padding: 10px;
+    margin-bottom: 10px;
+    font-size: 32px;
+    line-height: 40px;
+    text-shadow: 0 1px 1px white;
+    border-bottom: solid 1px #BBB;
+    background-color: #e7e7e7;
+    background-image: -moz-linear-gradient(top, #eeeeee, #dddddd);
+    background-image: -ms-linear-gradient(top, #eeeeee, #dddddd);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#eeeeee), to(#dddddd));
+    background-image: -webkit-linear-gradient(top, #eeeeee, #dddddd);
+    background-image: -o-linear-gradient(top, #eeeeee, #dddddd);
+    background-image: linear-gradient(top, #eeeeee, #dddddd);
+    background-repeat: repeat-x;
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ebebeb', endColorstr='#dadada', GradientType=0); }
+  #finder-main ul#providers {
+    padding: 10px;
+    float: left;
+    font-size: 20px;
+    line-height: 24px;
+    width: 300px; }
+    #finder-main ul#providers li {
+      float: left;
+      margin-bottom: 10px;
+      padding: 10px;
+      width: 100%;
+      background: #555;
+      color: white;
+      -webkit-border-radius: 3px;
+      -moz-border-radius: 3px;
+      border-radius: 3px; }
 
 .file {
   display: block;

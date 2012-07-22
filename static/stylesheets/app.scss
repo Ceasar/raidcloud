@@ -7,6 +7,12 @@
           box-sizing: border-box;
 }
 
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
 body {
   background: url('http://subtlepatterns.com/patterns/low_contrast_linen.png');
   padding-top: 40px;
@@ -38,7 +44,6 @@ h1#center-title {
   width: 136px;
   color: #333;
   ul {
-    list-style: none;
     padding: 10px 0;
     margin: 0;
     li {
@@ -83,6 +88,33 @@ h1#center-title {
     line-height: 32px;
     border: dashed 4px #CCC;
     @include border-radius(10px);
+  }
+
+  #header {
+    padding: 10px;
+    margin-bottom: 10px;
+    font-size: 32px;
+    line-height: 40px;
+    text-shadow: 0 1px 1px white;
+    border-bottom: solid 1px #BBB;
+    @include gradient-vertical(#EEE, #DDD);
+  }
+
+  ul#providers {
+    padding: 10px;
+    float: left;
+    font-size: 20px;
+    line-height: 24px;
+    width: 300px;
+    li {
+      float: left;
+      margin-bottom: 10px;
+      padding: 10px;
+      width: 100%;
+      background: #555;
+      color: white;
+      @include border-radius(3px);
+    }
   }
 }
 

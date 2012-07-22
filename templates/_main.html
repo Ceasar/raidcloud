@@ -4,19 +4,14 @@
 
   <div id="finder-sidebar">
     <ul id="nav">
-      <a href="/files" class="selected"><li>Files</li></a>
+      <a href="/" class="selected"><li>Files</li></a>
       <a href="/account"><li>Account</li></a>
       <a href="/logout"><li>Logout</li></a>
     <ul>
   </div>
 
   <div id="finder-main">
-    <div class="no-files">
-      Drag files here to get started with Raidcloud
-    </div>
-    <div class="file-list">
 
-    </div>
   </div>
 
 </script>
@@ -28,5 +23,17 @@
 
   </div>
   <span class="filename"><%= name %></span>
+
+</script>
+
+
+<script type="text/x-underscore-template" id="tmpl-file-list">
+
+  <div class="no-files">
+    Drag files here to get started with Raidcloud
+  </div>
+  <div class="file-list">
+
+  </div>
 
 </script>

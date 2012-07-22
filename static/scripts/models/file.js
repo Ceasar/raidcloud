@@ -1,4 +1,4 @@
-define(funciton (require, exports) {
+define(function (require, exports) {
   'use strict';
 
   var $           = require('jquery')
@@ -8,7 +8,15 @@ define(funciton (require, exports) {
 
   exports.File = Backbone.Model.extend({
 
-    initialize: function () {
+    url: function () {
+      var url = '/users/' + this.get('ownerId');
+
+      if (!this.isNew()) url += this.get('id');
+
+      return url;
+    }
+
+  , initialize: function () {
       console.log('init file model');
     }
 
