@@ -413,7 +413,7 @@ def get_dropbox(chunk):
 
 def get_drive(chunk):
     drive_token = g.current_user.drive_token
-    url = "https://www.googleapis.com/upload/drive/v2/files/" + chunk.drive_id
+    url = "https://www.googleapis.com/drive/v2/files/" + chunk.drive_id
     headers = {
         'Authorization': 'OAuth ' + drive_token
     }
