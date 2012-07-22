@@ -20,8 +20,9 @@ define(function (require, exports) {
     }
 
   , render: function () {
-      // console.log(this.model.get('raw'));
-      this.$el.html(this.template(this.model.get('raw')));
+      var model = (this.model.get('raw')) ? this.model.get('raw') : this.model.toJSON();
+
+      this.$el.html(this.template(model));
       this.$el.attr('draggable', 'true');
 
       return this;
@@ -42,7 +43,6 @@ define(function (require, exports) {
       var collection = this.model.collection;
 
       this.model.destroy();
-      console.log('file deleted');
       collection.trigger('removeFile');
     }
 

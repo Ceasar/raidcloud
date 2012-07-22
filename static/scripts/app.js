@@ -48,13 +48,13 @@ define(function (require, exports, module) {
 
   , files: function () {
       var user          = finder.get('owner')
-        , fileList      = new FileList(user.files)
+        , fileList      = new FileList(user.get('files'))
         , fileListView  = new FileListView({
             collection: fileList
           , el: $('#finder-main')
           });
 
-      fileList.setOption('ownerId', finder.get('owner').id);
+      fileList.setOwnerId(user.id);
 
       $finderLinks.removeClass('selected');
       $finderLinks.eq(0).addClass('selected');

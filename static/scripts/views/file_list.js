@@ -46,11 +46,11 @@ define(function (require, exports) {
       if (this.collection.isEmpty()) {
         this.$('.no-files').fadeIn();
       } else {
+        this.$('.no-files').hide();
         this.collection.each(function (file) {
           var view = new FileView({
                 model: file
               });
-
           $files.append(view.render().$el);
         });
       }

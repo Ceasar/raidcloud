@@ -11,10 +11,6 @@ define(function (require, exports) {
 
     model: File
 
-  , initialize: function () {
-
-    }
-
   , uploadFiles: function (data) {
       var files = data.files
         , that  = this;
@@ -31,9 +27,13 @@ define(function (require, exports) {
       });
     }
 
-  , setOption: function (option, value) {
+  , setOwnerId: function (ownerId) {
       this.options = this.options || {};
-      this.options[option] = value;
+      this.options.ownerId = ownerId;
+
+      _.each(this.models, function (file) {
+        file.set('ownerId', ownerId);
+      });
     }
 
   });

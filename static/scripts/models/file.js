@@ -22,7 +22,9 @@ define(function (require, exports) {
     }
 
   , initialize: function () {
-
+      if (typeof this.get('lastModifiedDate') === 'undefined') {
+        this.set('lastModifiedDate', this.get('modified_at'));
+      }
     }
 
   , upload: function () {
