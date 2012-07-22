@@ -52,26 +52,11 @@ google = oauth.remote_app('google',
 )
 
 
-def get_client(access_token):
-    app_key = app.config['DROPBOX_OAUTH_CONSUMER_KEY']
-    app_secret = app.config['DROPBOX_OAUTH_CONSUMER_SECRET']
-
-    sess = dropbox.session.DropboxSession(app_key, app_secret, 'app_folder')
-    request_token = sess.obtain_request_token()
-
-    next_url = request.args.get('next') or request.referrer
-    callback = url_for('dropbox_oauth_authorized', next=next_url,
-                           _external=True)
-    url = sess.build_authorize_url(request_token, oauth_callback=callback)
-    webbrowser.open(url)
-
-
 @google.tokengetter
 def get_google_token():
     """Get the google OAuth token in form (token, secret).
     If no token exists, return None instead."""
     return session.get('google_token')
-    return (drive_id, drive_token)
 
 
 @app.route('/dropbox')
