@@ -440,6 +440,7 @@ def put_drive(chunk):
     response = requests.post(url, data=data, headers=headers).text
     print response
     chunk.drive_id = response.json['id']
+    db.session.commit()
 
 @app.route('/foo')
 def foo():
