@@ -1,5 +1,8 @@
 import os
 
+import M2Crypto
+import uuid
+
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask import Flask, request, session, g, redirect, url_for, \
              render_template, flash
@@ -43,6 +46,9 @@ def get_user_id(username):
 # Models
 ###
 
+def _make_auth_token():
+    return str(uuid.UUID(bytes=M2Crypto.m2.rand_bytes(16)))
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True, nullable=False)
@@ -54,6 +60,8 @@ class User(db.Model):
     dropbox_token = db.Column(db.String(255), nullable=True)
 
     files = db.relation('File', backref='user')
+
+    auth_token = db.Column(db.String(36), unique=True, nullable=False, default=_make_auth_token, index=True)
 
 
 class File(db.Model):
