@@ -184,6 +184,12 @@ h1#center-title {
   height: 100%;
 }
 
+#progress {
+  display: none;
+  @include border-radius(0);
+  .bar { width: 0%; }
+}
+
 .file {
   display: block;
   float: left;

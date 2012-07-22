@@ -12,7 +12,7 @@ define(function (require, exports) {
     model: File
 
   , initialize: function () {
-      console.log('init file list collection');
+
     }
 
   , uploadFiles: function (data) {

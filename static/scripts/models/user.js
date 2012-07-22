@@ -46,8 +46,6 @@ define(function (require, exports) {
     }
 
   , initialize: function () {
-      console.log('init user model');
-
       this.on('change:id', this.initProviders);
     }
 
