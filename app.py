@@ -17,7 +17,7 @@ try:
 except KeyError:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://raid:cloud@localhost/raidcloud'
 
-app.config['GOOGLE_OAUTH_CONSUMER_KEY'] = 'AIzaSyAwJ0XdL2X6jU9S-2vOzfXsE3yfnx6361Q'
+app.config['GOOGLE_OAUTH_CONSUMER_KEY'] = '575198791092.apps.googleusercontent.com'
 app.config['GOOGLE_OAUTH_CONSUMER_SECRET'] = 'ei7THdOn1OyYCgYL_51ntTqK'
 app.secret_key = 'ei7THdOn1OyYCgYL_51ntTqK'
 db = SQLAlchemy(app)
@@ -48,15 +48,11 @@ def get_google_token():
     return session.get('google_token')
 
 
-BASE_URL = "http://raidcloud.herokuapp.com"
-
-
 @app.route('/google')
 def google_login():
     """Sign in with Google."""
     next_url = request.args.get('next') or request.referrer or None
-    suffix = url_for('google_oauth_authorized', next=next_url)
-    callback_url = "%s%s" % (BASE_URL, suffix)
+    callback_url = url_for('google_oauth_authorized', next=next_url, _external=True)
     return google.authorize(callback=callback_url)
 
 
