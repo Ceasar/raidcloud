@@ -33,12 +33,8 @@ define(function (require, exports) {
         , data = new FormData();
       data.append('file', file);
       data.append('name', this.get('name'));
-      // _.each(this.attributes, function (value, attr) {
-      //   console.log(attr);
-      //   console.log(value);
-      //   data.append(attr, value);
-      // });
-      console.log(data);
+      data.append('bytes', file.size);
+      data.append('lastModifiedDate', file.lastModifiedDate);
 
       xhr.file = file;
       xhr.upload.onprogress = function (e) {
