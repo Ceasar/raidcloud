@@ -111,20 +111,21 @@ def dropbox_oauth_authorized():
 
     request_token = session['dropbox_key']
     access_token = sess.obtain_access_token(request_token)
-    session['dropbox_token'] = access_token
     dropbox_id, dropbox_token = access_token.key, access_token.secret
 
-    user = User.query.filter_by(dropbox_id=dropbox_id).first()
+    user = get_current_user() or User.query.filter_by(dropbox_id==dropbox_id).first()
     if user:
-        # Update the dropbox_token if needed
+        # Add/Update user dropbox creds
         if user.dropbox_token != dropbox_token:
             user.dropbox_token = dropbox_token
-            db.session.commit()
+            user.dropbox_id = dropbox_id
     else:
-        # Create a new user
+        # Create user
         user = User(dropbox_id=dropbox_id, dropbox_token=dropbox_token)
         db.session.add(user)
-        db.session.commit()
+    db.session.commit()
+    session['user_id'] = user.id
+
     return redirect(request.args.get('next') or url_for('index'))
 
 
@@ -154,17 +155,19 @@ def google_oauth_authorized(resp):
         """
         drive_id = res['id']
 
-        user = User.query.filter_by(drive_id=drive_id).first()
+        user = get_current_user() or User.query.filter_by(drive_id==drive_id).first()
         if user:
-            # Update the drive_token if needed
+            # Add/Update user drive creds
             if user.drive_token != drive_token:
                 user.drive_token = drive_token
-                db.session.commit()
+                user.drive_id = drive_id
         else:
-            # Create a new user
+            # Create user
             user = User(drive_id=drive_id, drive_token=drive_token)
             db.session.add(user)
-            db.session.commit()
+        db.session.commit()
+        session['user_id'] = user.id
+
     return redirect(request.args.get('next') or url_for('index'))
 
 
@@ -326,15 +329,16 @@ def logout():
     return redirect(url_for('index'))
 
 
-@app.route('/user')
 @login_required
+@app.route('/user')
 def user():
     user = get_current_user()
     return to_json(user)
 
+@login_required
 @app.route('/users')
-def show_users(id):
-    return {}
+def show_users():
+   return jsonify(users=[row[0] for row in db.session.execute('SELECT id from "user"').fetchall()])
 
 
 @app.route('/users/<id>')
