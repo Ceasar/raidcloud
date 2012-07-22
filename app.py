@@ -269,6 +269,26 @@ def handle_file(filename):
         part_filename = "%s%02d" % (filename, i)
 
 
+def put_dropbox(filename):
+    """Put a file in the dropbox folder. User must be logged in."""
+    app_key = app.config['DROPBOX_OAUTH_CONSUMER_KEY']
+    app_secret = app.config['DROPBOX_OAUTH_CONSUMER_SECRET']
+    sess = dropbox.session.DropboxSession(app_key, app_secret, 'app_folder')
+    sess.set_token(g.current_user.dropbox_id, g.current_user.dropbox_token)
+    client = dropbox.client.DropboxClient(sess)
+    f = open(filename)
+    client.put_file(filename, f)
+
+
+@app.route('/foo')
+def foo():
+    try:
+        show = [session['user_id'], g.current_user.dropbox_id]
+        return str(show)
+    except Exception as e:
+        return str(e)
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     """Register a user."""
